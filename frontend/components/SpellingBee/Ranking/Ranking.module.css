@@ -1,0 +1,26 @@
+.ranking {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+
+  .current {
+    display: flex;
+    flex-direction: column;
+    .title {
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--grey);
+    }
+  }
+
+  .progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 65%;
+  }
+}

@@ -1,0 +1,37 @@
+.keyBox {
+  width: 83px;
+  height: 93px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background-color: #f0f0f0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background-color: #e6e6e6;
+    transform: scale(1.025);
+  }
+
+  &:active {
+    transform: scale(0.925);
+  }
+
+  .keyLetter {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: black;
+  }
+}
+
+.centerKey {
+  background-color: var(--golden);
+
+  &:hover {
+    background-color: hsl(51, 100%, 49%);
+  }
+}

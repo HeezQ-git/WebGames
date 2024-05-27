@@ -1,0 +1,25 @@
+.button {
+  outline: none;
+  border: 1px solid var(--light-grey);
+  border-radius: 40px;
+  padding: 15px 0;
+  width: 90px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--light-accent);
+  }
+
+  &:active {
+    background: var(--darker-accent);
+  }
+}
+
+.icon {
+  width: 52px;
+  padding: 15px;
+  aspect-ratio: 1;
+}

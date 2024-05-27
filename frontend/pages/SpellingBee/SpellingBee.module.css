@@ -1,0 +1,22 @@
+.content {
+  position: relative;
+  width: clamp(300px, 50%, 400px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+
+  .top {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+}

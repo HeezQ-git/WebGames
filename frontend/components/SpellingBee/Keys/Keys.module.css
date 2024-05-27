@@ -1,0 +1,16 @@
+.keysContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+
+  .keyRow {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .keyRow:not(:first-child) {
+    margin-top: -18px;
+  }
+}

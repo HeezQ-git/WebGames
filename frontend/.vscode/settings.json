@@ -1,0 +1,6 @@
+{
+    "CodeGPT.apiKey": "CodeGPT Plus Beta",
+    "CodeGPT.Autocomplete.enabled": false,
+    "CodeGPT.Autocomplete.provider": "Ollama - deepseek-coder:base",
+    "CodeGPT.Autocomplete.suggestionDelay": 1020
+}

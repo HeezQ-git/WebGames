@@ -1,0 +1,52 @@
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.container {
+  width: 100%;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+
+  .letter {
+    &::selection {
+      background: var(--golden);
+      color: white;
+    }
+  }
+
+  .invalidLetter {
+    color: var(--light-grey);
+  }
+
+  .goldenLetter {
+    color: var(--golden);
+  }
+
+  .blank {
+    opacity: 0.35;
+  }
+
+  &::after {
+    content: '';
+    background-color: var(--golden);
+    width: 2px;
+    height: 100%;
+    animation: blink 1s infinite step-end;
+  }
+}
+
+.moveCursor {
+  flex-direction: row-reverse;
+}

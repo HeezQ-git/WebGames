@@ -1,0 +1,58 @@
+{
+  "extends": [
+        "eslint:recommended",
+        "plugin:import/typescript",
+        "plugin:import/recommended"
+    ],
+    "plugins": [
+        "react",
+        "react-hooks",
+        "unused-imports"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "env": {
+        "es6": true,
+        "browser": true,
+        "node": true
+    },
+    "settings": {
+        "import/resolver": {
+            "typescript": true,
+            "node": true
+        }
+    },
+    "rules": {
+        "no-unused-vars": "off",
+        "unused-imports/no-unused-imports-ts": "error",
+        "import/no-named-as-default": "off",
+        "react-hooks/rules-of-hooks": "off",
+        "react/display-name": "off",
+        "no-undef": "off",
+        "no-dupe-args": "error",
+        "no-dupe-keys": "error",
+        "no-duplicate-case": "error",
+        "no-empty": "error",
+        "no-extra-semi": "error",
+        "no-invalid-regexp": "error",
+        "no-irregular-whitespace": "error",
+        "no-sparse-arrays": "error",
+        "no-unreachable": "error",
+        "eqeqeq": "warn",
+        "no-empty-function": "warn",
+        "no-multi-spaces": "warn",
+        "no-self-compare": "warn",
+        "no-throw-literal": "warn",
+        "no-unused-expressions": "warn",
+        "react/jsx-indent": "off",
+        "no-console": "warn",
+        "indent": ["warn", 2],
+        "max-params": ["warn", 4]
+    }
+}

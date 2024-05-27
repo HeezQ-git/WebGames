@@ -1,0 +1,30 @@
+.wordlist {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  width: 100%;
+  border: 1px solid var(--light-grey);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+
+  .words {
+    display: flex;
+    gap: 4px;
+
+    .word {
+      text-transform: capitalize;
+    }
+
+    .pangram {
+      background: var(--golden);
+    }
+
+    .noWords {
+      opacity: 0.6;
+      user-select: none;
+    }
+  }
+}
