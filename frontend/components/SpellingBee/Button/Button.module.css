@@ -1,9 +1,14 @@
 .button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   outline: none;
   border: 1px solid var(--light-grey);
   border-radius: 40px;
   padding: 15px 0;
-  width: 90px;
+  min-width: 90px;
+  height: max-content;
   background: transparent;
   cursor: pointer;
   font-size: 16px;
@@ -18,8 +23,42 @@
   }
 }
 
+.iconElement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
 .icon {
   width: 52px;
-  padding: 15px;
-  aspect-ratio: 1;
+  min-width: 0;
+  height: max-content;
+  padding: 0;
+  aspect-ratio: 1/1;
+}
+
+.small {
+  padding: 0;
+  width: 32px;
+}
+
+.warning {
+  color: var(--red);
+
+  &:hover {
+    background: var(--red);
+    color: var(--light-accent);
+    border: none;
+  }
+
+  &:active {
+    background: var(--dark-red);
+    color: var(--light-accent);
+    border: none;
+  }
+}
+
+.fullWidth {
+  width: 100%;
 }

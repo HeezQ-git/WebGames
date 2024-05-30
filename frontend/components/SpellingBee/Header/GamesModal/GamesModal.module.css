@@ -1,0 +1,64 @@
+.modal {
+  min-width: 350px;
+  padding: 16px;
+
+  .line {
+    width: 100%;
+    height: 1px;
+    background-color: var(--light-grey);
+    margin: 12px 0;
+  }
+
+  .games {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+
+    .noGames {
+      font-size: 20px;
+      color: var(--grey);
+    }
+
+    .game {
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.15s ease;
+
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .keys {
+          display: flex;
+          gap: 2px;
+
+          & > div {
+            width: 34px;
+            height: 39px;
+            pointer-events: none;
+
+            & > span {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+
+      .bottom {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+    }
+  }
+
+  .newGame {
+    width: 100%;
+    margin-top: 16px;
+  }
+}

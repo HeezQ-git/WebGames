@@ -6,7 +6,8 @@ import IconRefresh from '@/assets/icons/refresh';
 import { useGlobalStore } from '@/stores/global';
 
 const Buttons = () => {
-  const { removeLetter, shuffleKeys } = useGlobalStore();
+  const { removeLetter, shuffleKeys, dropConfetti, checkWord, resetInput } =
+    useGlobalStore();
 
   return (
     <div className={styles.buttons}>
@@ -14,7 +15,14 @@ const Buttons = () => {
       <Button type="icon" onClick={shuffleKeys}>
         <IconRefresh />
       </Button>
-      <Button>Enter</Button>
+      <Button
+        onClick={() => {
+          checkWord();
+          resetInput();
+        }}
+      >
+        Enter
+      </Button>
     </div>
   );
 };

@@ -6,7 +6,7 @@
   background: var(--light-grey);
   color: transparent;
   transition: all 0.225s ease;
-  z-index: -1;
+  z-index: 0;
 
   &::before {
     content: '';
@@ -17,7 +17,7 @@
     top: 50%;
     left: 0;
     transform: translateY(-50%);
-    z-index: -1;
+    z-index: 0;
   }
 
   &::after {
@@ -29,7 +29,7 @@
     top: 50%;
     right: 0;
     transform: translateY(-50%);
-    z-index: -1;
+    z-index: 0;
   }
 
   &:last-child::before {
@@ -43,7 +43,7 @@
 
 .achieved {
   background: var(--golden);
-  z-index: 1;
+  z-index: 2;
 
   &::before,
   &::after {
@@ -61,7 +61,7 @@
   font-weight: 500;
   padding: 16px;
   margin: -8px;
-  z-index: 1;
+  z-index: 2;
 
   &:hover {
     transform: scale(1.05);
@@ -70,5 +70,14 @@
   &::before,
   &::after {
     background: var(--golden);
+    z-index: -1;
   }
+
+  @media (max-width: 768px) {
+    padding: 14px;
+  }
+}
+
+.disableMargin {
+  margin: 0;
 }

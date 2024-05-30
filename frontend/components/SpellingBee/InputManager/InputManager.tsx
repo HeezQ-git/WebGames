@@ -1,18 +1,35 @@
 'use client';
 import { useGlobalStore } from '@/stores/global';
+import { useModalStore } from '@/stores/modal';
 import { useCallback, useEffect } from 'react';
 
 const InputManager = () => {
-  const { addLetter, removeLetter, resetInput, shuffleKeys } = useGlobalStore();
+  const { isNewGameModalOpen, isGamesModalOpen } = useModalStore();
+
+  const { addLetter, removeLetter, resetInput, checkWord, shuffleKeys } =
+    useGlobalStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (isNewGameModalOpen || isGamesModalOpen) return;
+
       if (e.key === 'Backspace' || e.key === 'Delete') removeLetter();
       else if (e.key === ' ') shuffleKeys();
       else if (e.key.length === 1) addLetter(e.key.toUpperCase());
-      else if (e.key === 'Enter') resetInput();
+      else if (e.key === 'Enter') {
+        checkWord();
+        resetInput();
+      }
     },
-    [addLetter, removeLetter, resetInput]
+    [
+      addLetter,
+      removeLetter,
+      resetInput,
+      isGamesModalOpen,
+      isNewGameModalOpen,
+      checkWord,
+      shuffleKeys,
+    ]
   );
 
   useEffect(() => {

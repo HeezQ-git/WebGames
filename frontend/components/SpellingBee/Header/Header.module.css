@@ -1,0 +1,46 @@
+@keyframes slide {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .button {
+    position: relative;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.1s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      background-color: transparent;
+      bottom: -2px;
+      transition: all 0.2s ease;
+    }
+
+    &:hover {
+      color: var(--grey);
+
+      &::before {
+        width: 100%;
+        background-color: var(--golden);
+        animation: slide 0.2s ease;
+      }
+    }
+  }
+}

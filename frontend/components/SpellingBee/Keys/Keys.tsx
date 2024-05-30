@@ -6,7 +6,7 @@ import { useGlobalStore } from '@/stores/global';
 
 const Keys = () => {
   const { keys, centerLetter } = useGlobalStore();
-  const copiedKeys = [...keys];
+  const copiedKeys = [...(keys || [])];
 
   const getNextKey = () => {
     const key = copiedKeys.shift();

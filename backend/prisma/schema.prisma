@@ -7,9 +7,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  username String @unique
-  email    String @unique
-  password String
+model Word {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  word      String  @unique
+  isProfane Boolean @default(false)
+}
+
+model Player {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  cookie    String?  @unique
+  games     Game[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Game {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  playerId     String   @db.ObjectId
+  letters      String[]
+  centerLetter String
+  enteredWords String[]
+  maximumScore Int
+  score        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
 }

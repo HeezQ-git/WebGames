@@ -1,22 +1,33 @@
-.content {
-  position: relative;
-  width: clamp(300px, 50%, 400px);
+.container {
+  width: clamp(300px, 50%, 450px);
+  margin-top: 16px;
 
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-
-  .top {
+  .line {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 32px;
+    height: 1px;
+    background-color: var(--light-grey);
+    margin-block: 8px;
   }
 
-  .bottom {
+  .content {
+    position: relative;
+
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 40px;
+
+    .top {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+    }
   }
 }

@@ -21,8 +21,8 @@ const axiosBase = (base?: string) =>
     baseURL: base || defaultUrlBase,
     withCredentials: true,
     headers: {
-      "X-User-Type": "STUDENT",
-      "Access-Control-Allow-Origin": "http://localhost:3000",
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
     },
   });
 

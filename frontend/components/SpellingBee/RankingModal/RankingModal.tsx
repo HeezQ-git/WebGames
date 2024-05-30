@@ -6,10 +6,7 @@ import Modal from '../Modal/Modal';
 import { useGlobalStore } from '@/stores/global';
 
 const RankingModal = ({ open, setOpen }: { open: boolean; setOpen: any }) => {
-  const { ranks, currentRank, points } = useGlobalStore();
-
-  const nextRank = ranks.find((rank) => rank.index === currentRank + 1);
-  const genius = ranks.find((rank) => rank.index === ranks.length - 1);
+  const { ranks, ranksPoints, currentRank, points } = useGlobalStore();
 
   return (
     <Modal
@@ -20,38 +17,53 @@ const RankingModal = ({ open, setOpen }: { open: boolean; setOpen: any }) => {
     >
       <div className={styles.modalContent}>
         <div className={styles.ranks}>
-          {ranks.map((rank, index) =>
-            points === rank.points ? (
+          {ranks.map((rank, index) => {
+            const currentRankPoints =
+              ranksPoints.find((r) => r.index === rank.index)?.points || 0;
+
+            const nextRankPoints =
+              ranksPoints.find((r) => r.index === currentRank + 1)?.points || 0;
+            const geniusPoints =
+              ranksPoints.find((r) => r.index === ranks.length - 1)?.points ||
+              0;
+
+            return rank.index === currentRank ? (
               <div key={index} className={styles.current}>
                 <div className={styles.leftContainer}>
                   <div className={styles.currentPoints}>{points}</div>
                   <div>
                     <div className={styles.title}>{rank.name}</div>
-                    <div className={styles.subtitle}>
-                      {(nextRank?.points || 0) - points} points to next rank,{' '}
-                      {(genius?.points || 0) - points} to Genius
-                    </div>
+                    {points >= geniusPoints ? (
+                      <div className={styles.subtitle}>
+                        You are a Genius! Congratulations!
+                      </div>
+                    ) : (
+                      <div className={styles.subtitle}>
+                        {nextRankPoints - points} points to next rank,{' '}
+                        {geniusPoints - points} to Genius
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className={styles.points}>{rank.points}</div>
+                <div className={styles.points}>{currentRankPoints}</div>
               </div>
             ) : (
               <div
                 key={index}
                 className={clsx(
                   styles.rank,
-                  points >= rank.points && styles.achieved
+                  points >= currentRankPoints && styles.achieved
                 )}
               >
                 <div className={styles.bullet} />
                 <div className={styles.rankContent}>
                   <div className={styles.name}>{rank.name}</div>
                   <div className={styles.line} />
-                  <div className={styles.points}>{rank.points}</div>
+                  <div className={styles.points}>{currentRankPoints}</div>
                 </div>
               </div>
-            )
-          )}
+            );
+          })}
         </div>
       </div>
     </Modal>

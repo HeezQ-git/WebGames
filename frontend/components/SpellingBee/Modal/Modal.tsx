@@ -2,6 +2,7 @@
 import React from 'react';
 import styles from './Modal.module.css';
 import IconCloseOutline from '@/assets/icons/close';
+import clsx from 'clsx';
 
 export interface ModalProps {
   children: React.ReactNode;
@@ -9,10 +10,20 @@ export interface ModalProps {
   closeModal: () => void;
   title?: string;
   subtitle?: string;
+  noContentPadding?: boolean;
+  classNames?: string[];
 }
 
 const Modal = (props: ModalProps) => {
-  const { children, open = true, title, subtitle, closeModal } = props;
+  const {
+    children,
+    open = true,
+    title,
+    subtitle,
+    closeModal,
+    noContentPadding,
+    classNames,
+  } = props;
 
   return open ? (
     <>
@@ -23,7 +34,7 @@ const Modal = (props: ModalProps) => {
           closeModal();
         }}
       />
-      <div className={styles.modal}>
+      <div className={clsx(styles.modal, ...(classNames || []))}>
         <div className={styles.close}>
           <div className={styles.header}>
             <span className={styles.title}>{title}</span>
@@ -39,7 +50,14 @@ const Modal = (props: ModalProps) => {
             <IconCloseOutline height="1.5em" width="1.5em" />
           </div>
         </div>
-        <div className={styles.content}>{children}</div>
+        <div
+          className={clsx(
+            styles.content,
+            noContentPadding && styles.noContentPadding
+          )}
+        >
+          {children}
+        </div>
       </div>
     </>
   ) : null;

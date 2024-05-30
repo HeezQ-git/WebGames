@@ -57,7 +57,7 @@
           content: '';
           position: absolute;
           background-color: var(--dark-accent);
-          height: 28px;
+          height: 32px;
           width: 2px;
           top: 0;
           left: 50%;
@@ -68,7 +68,7 @@
           content: '';
           position: absolute;
           background-color: var(--dark-accent);
-          height: 28px;
+          height: 32px;
           width: 2px;
           bottom: 0;
           left: 50%;

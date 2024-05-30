@@ -16,7 +16,9 @@ a {
 }
 
 :root {
-  --golden: hsl(51, 100%, 53%);
+  --golden: #ffdb0f; /* hsl(51, 100%, 53%) */
+  --darker-gold: #fad400; /* hsl(51, 100%, 49%) */
+
   --grey: hsl(0, 0%, 40%);
   --mid-grey: hsl(0, 0%, 60%);
   --light-grey: hsl(0, 0%, 86%);
@@ -24,4 +26,10 @@ a {
   --light-accent: hsl(0, 0%, 96%);
   --mid-accent: hsl(0, 0%, 94%);
   --dark-accent: hsl(0, 0%, 90%);
+
+  --background: hsl(0, 0%, 99%);
+
+  --red: hsl(5, 69%, 60%);
+  --dark-red: hsl(5, 69%, 56%);
+  --darkest-red: hsl(5, 69%, 52%);
 }
