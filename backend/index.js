@@ -12,7 +12,11 @@ const PORT = process.env.PORT || 8000;
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'https://web-games-one.vercel.app/',
+    'https://web-games-one.vercel.app',
+  ],
   credentials: true,
 };
 
@@ -29,6 +33,8 @@ app.use(async (req, res, next) => {
 
     res.cookie('playerId', playerId, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 365 * 24 * 60 * 60 * 1000,
     });
 

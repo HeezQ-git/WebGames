@@ -46,20 +46,25 @@ const GameManager = () => {
         setIsLoading(true);
 
         const game = await fetcher('POST')('api/game/create');
+        console.log(game);
 
-        await mutate();
-        setCurrentGame(game.id);
-        setIsLoading(false);
-        toast.success('Game created!', {
-          id: toastId,
-        });
+        if (game?.id) {
+          await mutate();
+          setCurrentGame(game.id);
+          setIsLoading(false);
+          toast.success('Game created!', {
+            id: toastId,
+          });
+        } else {
+          toast.error('Failed to create a new game', {
+            id: toastId,
+          });
+        }
 
         return;
       }
 
       if (games?.length) {
-        useGlobalStore.setState({ games });
-
         const lastPlayed = localStorage.getItem('lastPlayed');
 
         if (!currentGame && lastPlayed) {
@@ -82,6 +87,12 @@ const GameManager = () => {
       ranksPoints,
     });
   }, [points, ranksPoints, isLoading]);
+
+  useEffect(() => {
+    if (games?.length) {
+      useGlobalStore.setState({ games });
+    }
+  }, [isLoading]);
 
   return null;
 };

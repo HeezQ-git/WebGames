@@ -1,8 +1,6 @@
 "use client";
-// import { useTranslation } from "react-i18next";
-// import { cleanNotifications, notifications } from "@mantine/notifications";
-/* eslint-disable indent */
 import axios from "axios";
+import toast from "react-hot-toast";
 import useSWR, { SWRConfiguration, SWRResponse } from "swr";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -22,7 +20,8 @@ const axiosBase = (base?: string) =>
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app' : "http://localhost:8000/",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH",
     },
   });
 
@@ -39,7 +38,7 @@ export const fetcher = (method: Method, rest: FetcherOptions | void) => async (u
     data: method === "GET" ? undefined : data,
     params: method === "GET" ? data : undefined,
     cancelToken: source.token,
-    timeout: timeout || 2000,
+    timeout: timeout || 6000,
   });
 
   return wholeResponse ? response : response?.data;
@@ -54,29 +53,23 @@ export const useFetcherSWR = <T>(
     fetcherOptions?: FetcherOptions;
   } | void
 ): SWRResponse<T | undefined, any> => {
-  // const { t } = useTranslation();
 
   return useSWR<T | undefined>(
     [apiURL, dataToSend],
     ([url, data]: [string, object]) => fetcher(method, options?.fetcherOptions)(url, data),
     {
       shouldRetryOnError: true,
-      errorRetryInterval: -1,
+      errorRetryInterval: 3000,
       errorRetryCount: 3,
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
       // eslint-disable-next-line max-params
       onErrorRetry: (error, key, cfg, revalidate, { retryCount }) => {
-        // if (retryCount >= 3) {
-        // cleanNotifications();
-        // return notifications.show({
-        //   title: t("errors:network.unknown"),
-        //   message: t("errors:network.failedToFetch"),
-        //   color: "red",
-        //   withCloseButton: true,
-        //   autoClose: 30000,
-        //   withBorder: true,
-        // });
-        // }
+        if (retryCount >= 3) {
+          toast.dismiss();
+          return toast.error('Failed to fetch data', {
+            duration: 5000,
+          });
+        }
         if (error.status === 404) return;
         revalidate({ retryCount });
       },
