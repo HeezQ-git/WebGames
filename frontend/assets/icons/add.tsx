@@ -1,4 +1,4 @@
-function IconAddOutline(props) {
+function IconAddOutline(props: any) {
   return (
     <svg
       viewBox="0 0 512 512"

@@ -8,10 +8,10 @@ const Keys = () => {
   const { keys, centerLetter } = useGlobalStore();
   const copiedKeys = [...(keys || [])];
 
-  const getNextKey = () => {
+  const getNextKey = (): string => {
     const key = copiedKeys.shift();
     if (key === centerLetter) return getNextKey();
-    return key;
+    return key as string;
   };
 
   return (
