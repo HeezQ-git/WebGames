@@ -14,7 +14,7 @@ type FetcherOptions = {
   useAbsoluteLocalhost?: boolean;
 };
 
-const defaultUrlBase = "http://localhost:8000/";
+const defaultUrlBase = process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : "http://localhost:8000/";
 
 const axiosBase = (base?: string) =>
   axios.create({

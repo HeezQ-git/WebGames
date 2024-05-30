@@ -25,7 +25,7 @@ const Ranking = () => {
       <div className={styles.ranking} onClick={() => setOpen(true)}>
         <div className={styles.current}>
           <span className={styles.title}>{currentRankName}</span>
-          {currentRankName === ranks[ranks.length - 1].name ? (
+          {currentRankName !== 'Genius' ? (
             <span className={styles.subtitle}>
               {nextRankPoints - points} to {nextRankName}
             </span>
