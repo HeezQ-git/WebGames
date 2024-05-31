@@ -2,7 +2,6 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 import useSWR, { SWRConfiguration, SWRResponse } from "swr";
-import { setCookie } from "cookies-next";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -44,18 +43,6 @@ export const fetcher = (method: Method, rest: FetcherOptions | void) => async (u
     cancelToken: source.token,
     timeout: timeout || 6000,
   });
-
-
-  if (response.status === 202 && response.data?.action === 'SET_COOKIE') {
-    console.log('setting cookie', response.data);
-    setCookie('playerId', response.data.playerId, {
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      httpOnly: true,
-    });
-  }
 
   return wholeResponse ? response : response?.data;
 };

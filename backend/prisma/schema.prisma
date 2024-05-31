@@ -14,26 +14,34 @@ model Word {
 }
 
 model Player {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String   @unique
-  cookie    String?  @unique
-  games     Game[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  name      String       @unique
+  cookie    String?      @unique
+  games     PlayerGame[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
 
 model Game {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  playerId     String   @db.ObjectId
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
   letters      String[]
   centerLetter String
   enteredWords String[]
   maximumScore Int
-  score        Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  score        Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  players      PlayerGame[]
+}
+
+model PlayerGame {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  playerId String @db.ObjectId
+  gameId   String @db.ObjectId
 
   player Player @relation(fields: [playerId], references: [id])
+  game   Game   @relation(fields: [gameId], references: [id])
 
-  @@index([playerId])
+  @@unique([playerId, gameId])
+  @@index([gameId])
 }

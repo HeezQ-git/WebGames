@@ -15,53 +15,63 @@ const createGame = async (req, res) => {
     return res.status(400).json({ error: 'Player ID not found' });
   }
 
+  // Ensure player exists
+  const playerExists = await prisma.player.findUnique({
+    where: { id: playerId },
+  });
+
+  if (!playerExists) {
+    return res.status(400).json({ error: 'Player not found' });
+  }
+
+  // Generate letters if not provided
   if (!letters) {
     letters = [];
-    // !!!! add hard mode?
-    for (let i = 0; i < 5; i++) {
-      const letter = mostCommonLetters[Math.floor(Math.random() * 10)];
-      if (!letters.includes(letter)) letters.push(letter);
-      else i--;
+    while (letters.length < 5) {
+      const letter =
+        mostCommonLetters[Math.floor(Math.random() * mostCommonLetters.length)];
+      if (!letters.includes(letter)) {
+        letters.push(letter);
+      }
     }
-
-    for (let i = 0; i < 2; i++) {
-      const letter = otherLetters[Math.floor(Math.random() * 16)];
-      if (!letters.includes(letter)) letters.push(letter);
-      else i--;
+    while (letters.length < 7) {
+      const letter =
+        otherLetters[Math.floor(Math.random() * otherLetters.length)];
+      if (!letters.includes(letter)) {
+        letters.push(letter);
+      }
     }
-  } else if (typeof letters === 'string')
+  } else if (typeof letters === 'string') {
     letters = JSON.parse(letters.replace(/'/g, '"'));
+  }
 
-  if (!centerLetter)
+  if (!centerLetter) {
     centerLetter = letters[Math.floor(Math.random() * letters.length)];
+  }
 
   try {
     const pattern = generateLettersRegexPattern(letters, centerLetter);
 
-    const allWords = await prisma.word.findMany({
+    let words = await prisma.word.findMany({
       where: {
         word: {
           contains: centerLetter,
           mode: 'insensitive',
         },
-        isProfane: profanesAllowed === 'true' || profanesAllowed ? true : false,
+        isProfane: profanesAllowed === 'true' || !!profanesAllowed,
       },
-      select: {
-        word: true,
-      },
+      select: { word: true },
     });
 
-    const words = allWords
-      .map((word) => word.word)
-      .filter((word) => word.match(pattern));
+    words = words.filter((word) => word.word.match(pattern));
 
-    let maximumScore = 0;
-    for (let word of words)
-      maximumScore += getWordScore(word, letters).wordScore;
+    const maximumScore = words.reduce(
+      (score, word) => score + getWordScore(word.word, letters).wordScore,
+      0
+    );
 
     const game = await prisma.game.create({
       data: {
-        playerId,
         letters,
         centerLetter,
         enteredWords: [],
@@ -69,9 +79,17 @@ const createGame = async (req, res) => {
       },
     });
 
+    // Create the PlayerGame relationship
+    await prisma.playerGame.create({
+      data: {
+        playerId,
+        gameId: game.id,
+      },
+    });
+
     res.status(200).json(game);
   } catch (error) {
-    console.log(`Error in game.controller createGame`, error.message);
+    console.error(`Error in game.controller createGame:`, error);
     res.status(500).send({ message: 'Internal Server Error' });
   }
 };
@@ -84,9 +102,11 @@ const getAllGames = async (req, res) => {
   }
 
   try {
-    const game = await prisma.game.findMany({
+    const games = await prisma.game.findMany({
       where: {
-        playerId,
+        players: {
+          some: { playerId },
+        },
       },
       select: {
         id: true,
@@ -98,9 +118,9 @@ const getAllGames = async (req, res) => {
       },
     });
 
-    res.status(200).json(game);
+    res.status(200).json(games);
   } catch (error) {
-    console.log(`Error in game.controller getGame`, error.message);
+    console.error(`Error in game.controller getAllGames:`, error.message);
     res.status(500).send({ message: 'Internal Server Error' });
   }
 };
@@ -111,21 +131,43 @@ const deleteGame = async (req, res) => {
 
   if (!playerId) {
     return res.status(400).json({ error: 'Player ID not found' });
-  } else if (!gameId) {
+  }
+
+  if (!gameId) {
     return res.status(400).send({ message: 'Game ID is required' });
   }
 
   try {
-    await prisma.game.delete({
+    const game = await prisma.game.findFirst({
       where: {
         id: gameId,
-        playerId,
+        players: {
+          some: { playerId },
+        },
       },
+    });
+
+    if (!game) {
+      return res
+        .status(403)
+        .send({ message: 'Player is not part of this game' });
+    }
+
+    // Delete PlayerGame relationships first
+    await prisma.playerGame.deleteMany({
+      where: {
+        gameId: gameId,
+      },
+    });
+
+    // Delete the game
+    await prisma.game.delete({
+      where: { id: gameId },
     });
 
     res.status(200).json('Game deleted successfully');
   } catch (error) {
-    console.log(`Error in game.controller deleteGame`, error.message);
+    console.error(`Error in game.controller deleteGame:`, error.message);
     res.status(500).send({ message: 'Internal Server Error' });
   }
 };
@@ -136,7 +178,9 @@ const getAllGameWords = async (req, res) => {
 
   if (!playerId) {
     return res.status(400).json({ error: 'Player ID not found' });
-  } else if (!gameId) {
+  }
+
+  if (!gameId) {
     return res.status(400).send({ message: 'Game ID is required' });
   }
 
@@ -144,7 +188,9 @@ const getAllGameWords = async (req, res) => {
     const game = await prisma.game.findFirst({
       where: {
         id: gameId,
-        playerId,
+        players: {
+          some: { playerId },
+        },
       },
       select: {
         centerLetter: true,
@@ -152,35 +198,30 @@ const getAllGameWords = async (req, res) => {
       },
     });
 
-    if (!game) return res.status(400).send({ message: 'Game not found' });
+    if (!game) {
+      return res.status(400).send({ message: 'Game not found' });
+    }
 
     const pattern = generateLettersRegexPattern(
       game.letters,
       game.centerLetter
     );
 
-    const allWords = await prisma.word.findMany({
-      where: {
-        word: {
-          contains: game.centerLetter,
-          mode: 'insensitive',
+    const words = await prisma.word
+      .findMany({
+        where: {
+          word: {
+            contains: game.centerLetter,
+            mode: 'insensitive',
+          },
         },
-      },
-      select: {
-        word: true,
-      },
-    });
-
-    const words = allWords
-      .map((word) => word.word)
-      .filter((word) => word.match(pattern));
+        select: { word: true },
+      })
+      .then((allWords) => allWords.filter((word) => word.word.match(pattern)));
 
     res.status(200).json(words);
   } catch (error) {
-    console.log(
-      `Error in game.controller getAllCorrectGameWords`,
-      error.message
-    );
+    console.error(`Error in game.controller getAllGameWords:`, error.message);
     res.status(500).send({ message: 'Internal Server Error' });
   }
 };

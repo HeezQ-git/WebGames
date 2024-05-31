@@ -18,7 +18,6 @@ const corsOptions = {
     'https://web-games-one.vercel.app',
   ],
   credentials: true,
-  exposedHeaders: ['Set-Cookie', 'Cookie'],
 };
 
 app.use(cors(corsOptions));
@@ -39,11 +38,7 @@ app.use(async (req, res, next) => {
       maxAge: 365 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(202).json({
-      action: 'SET_COOKIE',
-      message: 'Cookie set, please reload.',
-      playerId,
-    });
+    res.status(200).json({ message: 'Cookie set' });
     return;
   } else {
     let player = await prisma.player.findUnique({

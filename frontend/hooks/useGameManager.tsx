@@ -64,9 +64,8 @@ const useGameManager = () => {
           }
         } catch (error) {
           toast.dismiss();
-          toast.error(`Failed to create a new game: ${error}`, {
+          toast.error(`Failed to create a new game`, {
             id: toastId,
-            duration: 40000,
           });
         } finally {
           setIsLoading(false);

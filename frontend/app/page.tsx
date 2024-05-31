@@ -1,12 +1,13 @@
 'use client';
-import styles from './page.module.css';
 
-import SpellingBee from '@/pages/SpellingBee/SpellingBee';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
-  return (
-    <main className={styles.container}>
-      <SpellingBee />
-    </main>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/spelling-bee');
+  }, []);
+  return null;
 }

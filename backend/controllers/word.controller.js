@@ -6,65 +6,72 @@ const checkWord = async (req, res) => {
     const { gameId, word, profanesAllowed } = req.body;
     const playerId = req.playerId;
 
-    if (!playerId)
+    if (!playerId) {
       return res.status(400).json({ error: 'Player ID not found' });
-    else if (!word)
-      return res.status(400).send({ message: 'Word is required' });
+    }
 
-    // Check if the word exists
-    const foundWord = await prisma.word.findFirst({
-      where: {
-        word: word.toLowerCase(),
-      },
-      select: {
-        isProfane: true,
-      },
-    });
+    if (!word) {
+      return res.status(400).json({ message: 'Word is required' });
+    }
 
-    // Are profanes allowed?
+    const lowerCaseWord = word.toLowerCase();
+
+    const [foundWord, game, playerGame] = await Promise.all([
+      prisma.word.findFirst({
+        where: { word: lowerCaseWord },
+        select: { isProfane: true },
+      }),
+      prisma.game.findFirst({
+        where: { id: gameId },
+        select: { enteredWords: true, letters: true },
+      }),
+      prisma.playerGame.findFirst({
+        where: { playerId, gameId },
+      }),
+    ]);
+
     if (
       !foundWord ||
       (foundWord.isProfane && (profanesAllowed === 'false' || !profanesAllowed))
-    )
-      return res.status(200).send({ error: 'Word is incorrect' });
+    ) {
+      return res.status(200).json({ error: 'Word is incorrect' });
+    }
 
-    // Get the game and add the word to the word list
-    const game = await prisma.game.findFirst({
-      where: {
-        id: gameId,
-      },
-      select: {
-        enteredWords: true,
-        letters: true,
-      },
-    });
+    if (!game) {
+      return res.status(400).json({ message: 'Game not found' });
+    }
 
-    if (!game) return res.status(400).send({ message: 'Game not found' });
-    if (game.enteredWords.includes(word.toLowerCase()))
-      return res.status(200).send({ error: 'Word already entered' });
+    if (game.enteredWords.includes(lowerCaseWord)) {
+      return res.status(200).json({ error: 'Word already entered' });
+    }
+
+    if (!playerGame) {
+      return res
+        .status(403)
+        .json({ message: 'Player is not part of this game' });
+    }
 
     const { wordScore, isPangram } = getWordScore(word, game.letters);
 
     const updatedGame = await prisma.game.update({
       where: { id: gameId },
       data: {
-        enteredWords: {
-          push: word.toLowerCase(),
-        },
-        score: {
-          increment: wordScore,
-        },
+        enteredWords: { push: lowerCaseWord },
+        score: { increment: wordScore },
+      },
+      select: {
+        score: true,
+        enteredWords: true,
       },
     });
 
     let message = '';
-
     if (isPangram) message = 'Pangram!';
     else if (wordScore === 1) message = 'Good!';
     else if (wordScore === 5 || wordScore === 6) message = 'Great!';
     else if (wordScore >= 7) message = 'Awesome!';
 
-    return res.status(200).send({
+    return res.status(200).json({
       message,
       isPangram,
       isProfane: foundWord.isProfane,
@@ -73,8 +80,8 @@ const checkWord = async (req, res) => {
       wordList: updatedGame.enteredWords,
     });
   } catch (error) {
-    console.log(`Error in word.controller checkWord`, error.message);
-    res.status(500).send({ message: 'Internal Server Error' });
+    console.error(`Error in word.controller checkWord:`, error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
