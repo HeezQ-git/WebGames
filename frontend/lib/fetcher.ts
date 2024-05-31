@@ -2,6 +2,7 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 import useSWR, { SWRConfiguration, SWRResponse } from "swr";
+import { setCookie } from "cookies-next";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -22,6 +23,9 @@ const axiosBase = (base?: string) =>
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app' : "http://localhost:8000/",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH",
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Auth-Token, Application, ResponseType, Set-Cookie',
+      'Access-Control-Expose-Headers': 'Set-Cookie Cookie',
     },
   });
 
@@ -40,6 +44,18 @@ export const fetcher = (method: Method, rest: FetcherOptions | void) => async (u
     cancelToken: source.token,
     timeout: timeout || 6000,
   });
+
+
+  if (response.status === 202 && response.data?.action === 'SET_COOKIE') {
+    console.log('setting cookie', response.data);
+    setCookie('playerId', response.data.playerId, {
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      httpOnly: true,
+    });
+  }
 
   return wholeResponse ? response : response?.data;
 };

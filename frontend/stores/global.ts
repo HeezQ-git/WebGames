@@ -51,17 +51,15 @@ export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get
   games: [],
   setGames: (games: Game[]) => set({ games }),
   currentGame: '',
-  setCurrentGame: (currentGame: string) => {
-    const foundGame = get().games.find((game: Game) => game.id === currentGame);
+  setCurrentGame: (currentGame: string, games?: Game[]) => {
+    const foundGame = (games || get().games)?.find((game: Game) => game.id === currentGame);
     if (foundGame) {
       localStorage.setItem('lastPlayed', currentGame);
       set({ currentGame, keys: foundGame?.letters, centerLetter: foundGame?.centerLetter, foundWords: foundGame?.enteredWords, points: foundGame?.score, maximumPoints: foundGame?.maximumScore })
     }
   },
-  fetchGames: async () => {
-    const games = await fetcher('GET')('api/game/all');
-    set({ games });
-  },
+  fetchGames: null,
+  setFetchGames: (fetcher: () => void) => set({ fetchGames: fetcher }),
   resetGame: () => {
     set({ currentGame: '', keys: [], centerLetter: '', foundWords: [], points: 0, maximumPoints: 0 })
   },

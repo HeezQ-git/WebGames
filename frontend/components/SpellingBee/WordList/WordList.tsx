@@ -11,12 +11,12 @@ const WordList = () => {
 
   const { foundWords, keys } = useGlobalStore();
 
-  const mappedWords = foundWords.map((word) => ({
-    text: word,
-    pangram:
-      new Set(word.split('')).size === keys.length &&
-      keys.includes(word[0] as string),
-  }));
+  const mappedWords = foundWords
+    .map((word) => ({
+      text: word,
+      pangram: new Set(word.split('')).size === keys.length,
+    }))
+    .reverse();
 
   const wordsElement = mappedWords.map((word, index) => (
     <span

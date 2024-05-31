@@ -67,7 +67,7 @@ const NewGameModal = () => {
         }
       );
 
-      fetchGames();
+      await fetchGames?.();
       form.reset();
       setIsNewGameModalOpen(false);
       setIsGamesModalOpen(true);

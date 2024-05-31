@@ -42,8 +42,9 @@ export interface GlobalStore {
   games: Game[];
   setGames: (games: Game[]) => void;
   currentGame: string;
-  setCurrentGame: (currentGame: string) => void;
-  fetchGames: () => void;
+  setCurrentGame: (currentGame: string, games?: Game[]) => void;
+  fetchGames: null | (() => void);
+  setFetchGames: (fetcher: () => void) => void;
   resetGame: () => void;
 
   checkWord: () => void;
