@@ -49,12 +49,27 @@ app.use(async (req, res, next) => {
     });
 
     if (!player) {
-      player = await prisma.player.create({
-        data: {
-          name: `Player-${playerId.substring(0, 8)}`,
-          cookie: playerId,
-        },
-      });
+      try {
+        player = await prisma.player.create({
+          data: {
+            name: `Player-${playerId.substring(0, 8)}`,
+            cookie: playerId,
+          },
+        });
+      } catch (error) {
+        if (error.code === 'P2002') {
+          player = await prisma.player.findUnique({
+            where: { cookie: playerId },
+            select: {
+              id: true,
+            },
+          });
+        } else {
+          console.error('Error creating player:', error);
+          res.status(500).send({ message: 'Internal Server Error' });
+          return;
+        }
+      }
     }
 
     req.playerId = player.id;

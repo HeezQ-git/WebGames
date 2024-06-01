@@ -3,6 +3,8 @@ import { useGlobalStore } from '@/stores/global';
 import { useModalStore } from '@/stores/modal';
 import { useCallback, useEffect } from 'react';
 
+const allowedKeys = [' ', 'Backspace', 'Delete', 'Enter'];
+
 const InputManager = () => {
   const { isNewGameModalOpen, isGamesModalOpen } = useModalStore();
 
@@ -12,6 +14,7 @@ const InputManager = () => {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (isNewGameModalOpen || isGamesModalOpen) return;
+      if (!/^[a-z]+$/i.test(e.key) && !allowedKeys.includes(e.key)) return;
 
       if (e.key === 'Backspace' || e.key === 'Delete') removeLetter();
       else if (e.key === ' ') shuffleKeys();

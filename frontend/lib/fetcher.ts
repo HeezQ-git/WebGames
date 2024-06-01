@@ -31,6 +31,7 @@ const axiosBase = (base?: string) =>
 export const fetcher = (method: Method, rest: FetcherOptions | void) => async (url: string, data?: any) => {
   let { base, wholeResponse, timeout } = rest || {};
 
+  // eslint-disable-next-line import/no-named-as-default-member
   const source = axios.CancelToken.source();
 
   const response = await axiosBase(
@@ -57,6 +58,8 @@ export const useFetcherSWR = <T>(
   } | void
 ): SWRResponse<T | undefined, any> => {
 
+  const { surpressError } = dataToSend || {} as any;
+
   return useSWR<T | undefined>(
     [apiURL, dataToSend],
     ([url, data]: [string, object]) => fetcher(method, options?.fetcherOptions)(url, data),
@@ -67,6 +70,8 @@ export const useFetcherSWR = <T>(
       revalidateOnFocus: true,
       // eslint-disable-next-line max-params
       onErrorRetry: (error, key, cfg, revalidate, { retryCount }) => {
+        if (surpressError) return;
+
         if (retryCount >= 3) {
           toast.dismiss();
           return toast.error('Failed to fetch data', {

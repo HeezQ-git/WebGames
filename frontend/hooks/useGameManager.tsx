@@ -37,7 +37,11 @@ const useGameManager = () => {
 
   const getCurrentRank = useCallback(
     (points: number) => {
-      return points === undefined || points === 0
+      const arePointsZero = points === undefined || points === 0;
+      const isSecondRankZero =
+        ranksPoints.find((rank) => rank.index === 1)?.points !== 0;
+
+      return arePointsZero && isSecondRankZero
         ? 0
         : ranksPoints.find((rank) => points >= rank.points)?.index || 0;
     },

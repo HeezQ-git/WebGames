@@ -1,16 +1,15 @@
 import React from 'react';
-import Key from '../../Keys/Key/Key';
-import IconDeleteOutline from '@/assets/icons/delete';
 import Dot from '../../Dot/Dot';
 import { Game } from '@/types/globalStore';
 import Modal from '../../Modal/Modal';
 import styles from './GamesModal.module.css';
 import { useGlobalStore } from '@/stores/global';
-import IconAddOutline from '@/assets/icons/add';
 import { useModalStore } from '@/stores/modal';
 import { fetcher } from '@/lib/fetcher';
 import toast from 'react-hot-toast';
 import { ActionIcon, Button, Tooltip } from '@mantine/core';
+import InlineKeys from '../../InlineKeys/InlineKeys';
+import { MdOutlineAdd, MdOutlineDelete, MdOutlineShare } from 'react-icons/md';
 
 const GamesModal = () => {
   const { isGamesModalOpen, setIsGamesModalOpen, setIsNewGameModalOpen } =
@@ -68,26 +67,53 @@ const GamesModal = () => {
                     }}
                   >
                     <div className={styles.top}>
-                      <div className={styles.keys}>
-                        <Key letter={game.centerLetter} centerKey />
-                        {game.letters.map(
-                          (letter) =>
-                            letter !== game.centerLetter && (
-                              <Key key={letter} letter={letter} />
-                            )
-                        )}
-                      </div>
-                      <Tooltip label="Delete game" position="bottom" withArrow>
-                        <ActionIcon
-                          color="red"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteGame(game.id);
-                          }}
+                      <InlineKeys
+                        letters={game.letters}
+                        centerLetter={game.centerLetter}
+                      />
+                      <div className={styles.actionButtons}>
+                        <Tooltip
+                          label="Share game"
+                          position="bottom"
+                          withArrow
+                          openDelay={500}
                         >
-                          <IconDeleteOutline />
-                        </ActionIcon>
-                      </Tooltip>
+                          <ActionIcon
+                            color="#298de0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(
+                                `${window.location.origin}/spelling-bee/invite/${game.id}`
+                              );
+                              toast.success(
+                                'Game invite link copied to clipboard!',
+                                {
+                                  icon: '📋',
+                                  position: 'top-right',
+                                }
+                              );
+                            }}
+                          >
+                            <MdOutlineShare size={18} />
+                          </ActionIcon>
+                        </Tooltip>
+                        <Tooltip
+                          label="Delete game"
+                          position="bottom"
+                          withArrow
+                          openDelay={500}
+                        >
+                          <ActionIcon
+                            color="red"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteGame(game.id);
+                            }}
+                          >
+                            <MdOutlineDelete size={18} />
+                          </ActionIcon>
+                        </Tooltip>
+                      </div>
                     </div>
                     <div className={styles.bottom}>
                       <span className={styles.name}>{currentRankName}</span>
@@ -108,7 +134,7 @@ const GamesModal = () => {
       <div className={styles.newGame}>
         <Button
           fullWidth
-          leftSection={<IconAddOutline />}
+          leftSection={<MdOutlineAdd size={22} />}
           onClick={() => {
             setIsGamesModalOpen(false);
             setIsNewGameModalOpen(true);

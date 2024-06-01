@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './SpellingBee.module.css';
 
 import WordList from '@/components/SpellingBee/WordList/WordList';
@@ -16,12 +16,17 @@ import { useOs, useViewportSize } from '@mantine/hooks';
 import { useGlobalStore } from '@/stores/global';
 import Image from 'next/image';
 import CatImage from '@/assets/images/sad_cat.jpg';
+import InviteModal from '@/components/SpellingBee/InviteModal/InviteModal';
 
-const SpellingBee = () => {
-  const { confetti } = useGlobalStore();
+const SpellingBee = ({ invite }: { invite?: string }) => {
+  const { confetti, setInvite } = useGlobalStore();
   const { height, width } = useViewportSize();
 
   const os = useOs();
+
+  useEffect(() => {
+    if (invite) setInvite(invite);
+  }, [invite, setInvite]);
 
   return (
     <div className={styles.container}>
@@ -42,6 +47,7 @@ const SpellingBee = () => {
           </div>
           <InputManager />
           <GameManager />
+          <InviteModal />
           <Toaster />
           {confetti && (
             <Confetti

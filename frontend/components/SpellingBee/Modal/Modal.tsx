@@ -1,8 +1,8 @@
 'use client';
 import React from 'react';
 import styles from './Modal.module.css';
-import IconCloseOutline from '@/assets/icons/close';
 import clsx from 'clsx';
+import { MdOutlineClose } from 'react-icons/md';
 
 export interface ModalProps {
   children: React.ReactNode;
@@ -47,7 +47,7 @@ const Modal = (props: ModalProps) => {
               closeModal();
             }}
           >
-            <IconCloseOutline height="1.5em" width="1.5em" />
+            <MdOutlineClose />
           </div>
         </div>
         <div

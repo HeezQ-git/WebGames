@@ -3,10 +3,17 @@ import React from 'react';
 import styles from './Keys.module.css';
 import Key from './Key/Key';
 import { useGlobalStore } from '@/stores/global';
+import clsx from 'clsx';
 
-const Keys = () => {
+const Keys = ({
+  overrideKeys,
+  disablePointers,
+}: {
+  overrideKeys?: string[];
+  disablePointers?: boolean;
+}) => {
   const { keys, centerLetter } = useGlobalStore();
-  const copiedKeys = [...(keys || [])];
+  const copiedKeys = [...(overrideKeys || keys || [])];
 
   const getNextKey = (): string => {
     const key = copiedKeys.shift();
@@ -15,7 +22,12 @@ const Keys = () => {
   };
 
   return (
-    <div className={styles.keysContainer}>
+    <div
+      className={clsx(
+        styles.keysContainer,
+        disablePointers && styles.disablePointers
+      )}
+    >
       <div className={styles.keyRow}>
         <Key letter={getNextKey()} />
         <Key letter={getNextKey()} />

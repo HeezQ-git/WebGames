@@ -11,6 +11,9 @@ export interface GlobalStore {
   confetti: boolean;
   dropConfetti: () => void;
 
+  invite: null | string;
+  setInvite: (invite: null | string) => void;
+
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
 

@@ -153,17 +153,28 @@ const deleteGame = async (req, res) => {
         .send({ message: 'Player is not part of this game' });
     }
 
-    // Delete PlayerGame relationships first
     await prisma.playerGame.deleteMany({
       where: {
-        gameId: gameId,
+        gameId,
+        playerId,
       },
     });
 
-    // Delete the game
-    await prisma.game.delete({
-      where: { id: gameId },
+    // check if there are any other players in the game
+    const otherPlayers = await prisma.playerGame.findMany({
+      where: {
+        gameId,
+        NOT: { playerId },
+      },
     });
+
+    console.log(otherPlayers);
+
+    if (!otherPlayers?.length) {
+      await prisma.game.delete({
+        where: { id: gameId },
+      });
+    }
 
     res.status(200).json('Game deleted successfully');
   } catch (error) {
@@ -226,9 +237,87 @@ const getAllGameWords = async (req, res) => {
   }
 };
 
+const addPlayerToGame = async (req, res) => {
+  let { playerId, gameId } = req.body;
+
+  if (!playerId) playerId = req.playerId;
+
+  if (!gameId) {
+    return res.status(400).json({ error: 'Game ID is required' });
+  }
+
+  try {
+    const playerExists = await prisma.player.findFirst({
+      where: { OR: [{ id: playerId }, { cookie: playerId }] },
+    });
+
+    if (!playerExists) {
+      return res.status(400).json({ error: 'Player not found' });
+    }
+
+    const gameExists = await prisma.game.findUnique({
+      where: { id: gameId },
+    });
+
+    if (!gameExists) {
+      return res.status(400).json({ error: 'Game not found' });
+    }
+
+    const playerGameExists = await prisma.playerGame.findFirst({
+      where: {
+        playerId: playerExists.id,
+        gameId,
+      },
+    });
+
+    if (playerGameExists) {
+      return res
+        .status(400)
+        .json({ error: 'Player is already part of this game' });
+    }
+
+    await prisma.playerGame.create({
+      data: {
+        playerId: playerExists.id,
+        gameId,
+      },
+    });
+
+    res.status(200).json({ message: 'Player added to game successfully' });
+  } catch (error) {
+    console.error(`Error in game.controller addPlayerToGame:`, error);
+    res.status(500).send({ message: 'Internal Server Error' });
+  }
+};
+
+const getGame = async (req, res) => {
+  const { gameId } = req.params;
+
+  if (!gameId || gameId === 'undefined' || gameId === 'null') {
+    return res.status(400).send({ message: 'Game ID is required' });
+  }
+
+  try {
+    const game = await prisma.game.findFirst({
+      where: { id: gameId },
+    });
+
+    if (!game) {
+      return res.status(400).send({ message: 'Game not found' });
+    }
+
+    res.status(200).json(game);
+  } catch (error) {
+    console.error(`Error in game.controller getGame:`, error.message);
+    res.status(500).send({ message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   createGame,
+  getGame,
   getAllGames,
   deleteGame,
   getAllGameWords,
+  addPlayerToGame,
 };

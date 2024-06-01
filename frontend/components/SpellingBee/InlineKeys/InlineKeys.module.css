@@ -1,0 +1,14 @@
+.keys {
+  display: flex;
+  gap: 2px;
+
+  & > div {
+    width: 34px;
+    height: 39px;
+    pointer-events: none;
+
+    & > span {
+      font-size: 16px;
+    }
+  }
+}

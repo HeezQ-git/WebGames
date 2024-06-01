@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import styles from './WordList.module.css';
 
-import Caret from '@/assets/icons/caret';
 import clsx from 'clsx';
 import { useGlobalStore } from '@/stores/global';
+import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 
 const WordList = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,9 +47,8 @@ const WordList = () => {
               You have found {foundWords.length} words!
             </p>
           )}
-          <Caret
-            height="1.5em"
-            width="1.5em"
+          <MdOutlineKeyboardArrowDown
+            size={20}
             style={{
               transform: `rotate(${isOpen ? '180deg' : '0deg'})`,
               transition: 'transform 0.1s ease',

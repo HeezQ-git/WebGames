@@ -10,6 +10,9 @@ export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get
     setTimeout(() => set({ confetti: false }), 8000);
   },
 
+  invite: null,
+  setInvite: (invite: null | string) => set({ invite }),
+
   isLoading: false,
   setIsLoading: (isLoading: boolean) => set({ isLoading }),
 
