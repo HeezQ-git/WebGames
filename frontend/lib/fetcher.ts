@@ -1,5 +1,6 @@
 "use client";
 import axios from "axios";
+import { getSession } from "next-auth/react";
 import useSWR, { SWRConfiguration, SWRResponse } from "swr";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -12,19 +13,20 @@ type FetcherOptions = {
 
 const defaultUrlBase = process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : "http://localhost:8000/";
 
-const axiosBase = (base?: string) =>
-  axios.create({
+const axiosBase = async (base?: string) => {
+  const session = await getSession();
+
+  return axios.create({
     baseURL: base || defaultUrlBase,
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app' : "http://localhost:8000/",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH",
+      "Access-Control-Allow-Origin": process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : "http://localhost:8000/",
       'Access-Control-Allow-Credentials': 'true',
-      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Auth-Token, Application, ResponseType, Set-Cookie',
-      'Access-Control-Expose-Headers': 'Set-Cookie Cookie',
+      'Authorization': `${session?.user?.pid || ''}`,
     },
   });
+}
 
 export const fetcher = (method: Method, rest: FetcherOptions | void) => async (url: string, data?: any) => {
   let { base, wholeResponse, timeout } = rest || {};
@@ -32,13 +34,14 @@ export const fetcher = (method: Method, rest: FetcherOptions | void) => async (u
   // eslint-disable-next-line import/no-named-as-default-member
   const source = axios.CancelToken.source();
 
-  const response = await axiosBase(
+  const gotAxiosBase = await axiosBase(
     base ? base : undefined
-  )({
+  );
+
+  const response = await gotAxiosBase({
     method,
     url,
-    data: method === "GET" ? undefined : data,
-    params: method === "GET" ? data : undefined,
+    data,
     cancelToken: source.token,
     timeout: timeout || 6000,
   });

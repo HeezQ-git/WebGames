@@ -2,7 +2,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 
 const SessionManager = () => {
-  const { status } = useSession();
+  const { status, data } = useSession();
 
   const handleSignIn = async () => {
     await signIn('credentials', {

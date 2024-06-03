@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(async (req, res, next) => {
   if (req.path === '/api/auth/signin') return next();
 
-  let playerCookie = req.cookies.pid;
+  let playerCookie = req.headers?.authorization;
 
   if (!playerCookie) {
     return res

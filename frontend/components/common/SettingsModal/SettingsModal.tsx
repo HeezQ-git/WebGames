@@ -177,7 +177,11 @@ const SettingsModal = () => {
     () => (
       <Modal
         opened={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
+        onClose={() => {
+          setIsSettingsModalOpen(false);
+          setEditingElement(null);
+          form.reset();
+        }}
         title={<span className="modalTitle">Settings</span>}
         className={styles.settings}
         centered

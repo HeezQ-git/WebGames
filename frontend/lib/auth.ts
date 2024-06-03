@@ -1,8 +1,9 @@
 import { cookies } from 'next/headers';
 import NextAuth from 'next-auth/next';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { getToken } from 'next-auth/jwt';
 
-const authApiURL = 'http://localhost:8000/api/auth/signin';
+const authApiURL = (process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : 'http://localhost:8000/') + 'api/auth/signin';
 
 export const authOptions = (req: any, res: any) => ({
   secret: process.env.NEXTAUTH_SECRET,
@@ -22,6 +23,11 @@ export const authOptions = (req: any, res: any) => ({
         const { isGuest, isInitial, username, password } = credentials;
 
         try {
+          const token = await getToken({
+            req,
+            secret: process.env.NEXTAUTH_SECRET,
+          });
+
           if (isGuest) {
             const response = await fetch(authApiURL, {
               method: 'POST',
@@ -47,7 +53,7 @@ export const authOptions = (req: any, res: any) => ({
             body: JSON.stringify({
               username,
               password,
-              oldPid: isInitial ? undefined : cookies().get('pid')?.value,
+              oldPid: isInitial ? undefined : token?.pid,
             }),
           }).then((res) => res.json());
 
@@ -57,11 +63,12 @@ export const authOptions = (req: any, res: any) => ({
               name: username,
             };
           }
+
+          return null;
         } catch (error) {
           return null;
         }
 
-        return null;
       },
     }),
   ],
@@ -76,40 +83,13 @@ export const authOptions = (req: any, res: any) => ({
     },
     async session({ session, token }: any) {
       if (token.name) session.user.name = token.name;
-      if (cookies().get('pid') !== token.pid) {
-        cookies().set(
-          'pid',
-          token.pid,
-          {
-            path: '/',
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 365,
-          }
-        );
-      }
+      if (token.pid) session.user.pid = token.pid;
 
       return session;
     },
   },
-  cookies: {
-    sessionToken: {
-      name:
-        process.env.NODE_ENV === 'development'
-          ? 'next-auth.session-token'
-          : '__Secure-next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 365,
-      },
-    },
-  },
   events: {
-    async signOut({ token }: any) {
+    async signOut() {
       // remove access token
       cookies().set('pid', '', {
         path: '/',
