@@ -9,16 +9,16 @@ const useGameManager = () => {
   const [retryCount, setRetryCount] = useState(0);
 
   const {
+    isLoading: globalIsLoading,
     setIsLoading,
-    fetchGames,
-    setFetchGames,
-    setGames,
-    setCurrentGame,
     ranks,
     maximumPoints,
     points,
     currentGame,
-    isLoading: globalIsLoading,
+    fetchGames,
+    setFetchGames,
+    setGames,
+    setCurrentGame,
   } = useGlobalStore();
 
   const {
@@ -60,6 +60,7 @@ const useGameManager = () => {
 
   useEffect(() => {
     const manageGames = async () => {
+      setIsLoading(true);
       if (status === 'loading') return;
       else if (status === 'unauthenticated')
         return toast.loading('Creating guest account...', { id: 'guest' });
@@ -118,6 +119,8 @@ const useGameManager = () => {
       currentRank: getCurrentRank(points),
       ranksPoints,
     });
+
+    setIsLoading(false);
   }, [
     fetchGames,
     games,

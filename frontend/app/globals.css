@@ -7,7 +7,7 @@
 html,
 body {
   max-width: 100dvw;
-  min-height: calc(100dvh - 60px);
+  min-height: 100dvh;
   height: 100dvh;
   overflow-x: hidden;
   transition: all 0.1s ease !important;
@@ -68,9 +68,22 @@ a {
 .mainContent {
   width: 100%;
   height: calc(100% - 60px);
+  margin: 0;
+  padding: 0;
 }
 
 .modalTitle {
   font-size: 18px;
   font-weight: 600;
+}
+
+@keyframes loadingGradient {
+  0% {
+    background-size: 200% 150%;
+    background-position: 100% 50%;
+  }
+  100% {
+    background-size: 200% 100%;
+    background-position: 0 100%;
+  }
 }

@@ -8,11 +8,6 @@ import Header from '@/components/common/Header/Header';
 import { Toaster } from 'react-hot-toast';
 import SettingsModal from '@/components/common/SettingsModal/SettingsModal';
 
-export const metadata = {
-  title: 'NYT Games',
-  description: 'The New York Times Games',
-};
-
 const roboto = Roboto({
   subsets: ['latin'],
   weight: ['100', '300', '400', '500', '700'],
@@ -73,14 +68,14 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body className={roboto.className}>
-        <Session>
-          <MantineProvider theme={theme}>
+        <MantineProvider theme={theme}>
+          <Session>
             <Header />
             <main className="mainContent">{children}</main>
             <Toaster toastOptions={{ className: 'toaster' }} />
             <SettingsModal />
-          </MantineProvider>
-        </Session>
+          </Session>
+        </MantineProvider>
       </body>
     </html>
   );

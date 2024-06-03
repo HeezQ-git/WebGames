@@ -5,40 +5,52 @@ import { fetcher, useFetcherSWR } from '@/lib/fetcher';
 import { Game } from '@/types/globalStore';
 import styles from './InviteModal.module.css';
 import { Button, Modal } from '@mantine/core';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 const InviteModal = () => {
   const [notified, setNotified] = useState(false);
-  const { games, currentGame, invite, setInvite, fetchGames, setCurrentGame } =
-    useGlobalStore();
+  const { games, currentGame, fetchGames, setCurrentGame } = useGlobalStore();
+  const [invite, setInvite] = useState<string | null>(null);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const foundInvite = searchParams.get('invite');
 
   const { data: inviteGame, isLoading } = useFetcherSWR<Game>(
     'GET',
-    `api/game/byId/${invite}`,
+    invite ? `api/game/byId/${invite}` : undefined,
     { surpressError: true }
   );
 
   useEffect(() => {
-    if (!isLoading && !inviteGame && invite && !notified) {
+    if (games?.length && games?.find((game) => game.id === foundInvite)) {
+      setCurrentGame(foundInvite!);
+      toast.error('You are already in this game', {
+        id: 'invite-error',
+        position: 'top-right',
+      });
+      return router.push(`/spelling-bee`);
+    }
+
+    if (!isLoading && !inviteGame && foundInvite && !notified) {
       setNotified(true);
       toast.error('The game you were invited to does not exist', {
         id: 'invite-error',
         position: 'top-right',
       });
-      router.push(`/spelling-bee`);
-    } else if (games?.length && games?.find((game) => game.id === invite)) {
-      setInvite(null);
-      setCurrentGame(invite!);
+      return router.push(`/spelling-bee`);
+    }
+
+    if (foundInvite && foundInvite?.length === 24 && invite !== foundInvite) {
+      setInvite(foundInvite);
       router.push(`/spelling-bee`);
     }
-  }, [isLoading, inviteGame, router, notified]);
+  }, [isLoading, inviteGame, router, foundInvite, notified]);
 
   if (!inviteGame) return null;
 
-  return !isLoading && currentGame !== invite ? (
+  return !isLoading && currentGame !== foundInvite && inviteGame ? (
     <Modal
       opened={!!invite}
       onClose={() => setInvite(null)}
@@ -51,26 +63,26 @@ const InviteModal = () => {
     >
       <div className={styles.modalContent}>
         <InlineKeys
-          letters={inviteGame.letters}
-          centerLetter={inviteGame.centerLetter}
+          letters={inviteGame?.letters}
+          centerLetter={inviteGame?.centerLetter}
         />
         <div className={styles.infoContainer}>
           <div className={styles.infoRow}>
             <span className={styles.label}>Words guessed</span>
             <div className={styles.line} />
             <span className={styles.value}>
-              {inviteGame.enteredWords.length}
+              {inviteGame?.enteredWords?.length}
             </span>
           </div>
           <div className={styles.infoRow}>
             <span className={styles.label}>Current score</span>
             <div className={styles.line} />
-            <span className={styles.value}>{inviteGame.score}</span>
+            <span className={styles.value}>{inviteGame?.score}</span>
           </div>
           <div className={styles.infoRow}>
             <span className={styles.label}>Maximum score</span>
             <div className={styles.line} />
-            <span className={styles.value}>{inviteGame.maximumScore}</span>
+            <span className={styles.value}>{inviteGame?.maximumScore}</span>
           </div>
         </div>
         <div className={styles.buttons}>

@@ -26,13 +26,6 @@ const axiosBase = (base?: string) =>
     },
   });
 
-
-const manageCookies = (data: any) => {
-  if (data?.action !== 'COOKIE_SET') return;
-
-  localStorage.setItem('pid', data.pid);
-}
-
 export const fetcher = (method: Method, rest: FetcherOptions | void) => async (url: string, data?: any) => {
   let { base, wholeResponse, timeout } = rest || {};
 
@@ -55,7 +48,7 @@ export const fetcher = (method: Method, rest: FetcherOptions | void) => async (u
 
 export const useFetcherSWR = <T>(
   method: Method,
-  apiURL: string,
+  apiURL?: string,
   dataToSend?: object,
   options?: {
     swrOptions?: SWRConfiguration;
@@ -67,7 +60,7 @@ export const useFetcherSWR = <T>(
 
   return useSWR<T | undefined>(
     [apiURL, dataToSend],
-    ([url, data]: [string, object]) => fetcher(method, options?.fetcherOptions)(url, data),
+    ([url, data]: [string, object]) => (apiURL ? fetcher(method, options?.fetcherOptions)(url, data) : undefined),
     {
       shouldRetryOnError: true,
       errorRetryInterval: 3000,
