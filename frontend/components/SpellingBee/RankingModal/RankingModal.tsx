@@ -2,7 +2,7 @@
 import React from 'react';
 import styles from './RankingModal.module.css';
 import clsx from 'clsx';
-import Modal from '../Modal/Modal';
+import { Modal } from '@mantine/core';
 import { useGlobalStore } from '@/stores/global';
 
 const RankingModal = ({ open, setOpen }: { open: boolean; setOpen: any }) => {
@@ -10,12 +10,28 @@ const RankingModal = ({ open, setOpen }: { open: boolean; setOpen: any }) => {
 
   return (
     <Modal
-      open={open}
-      closeModal={() => setOpen(false)}
-      title="Rankings"
-      subtitle="Ranks are based on a percentage of possible points in a puzzle."
+      opened={open}
+      onClose={() => setOpen(false)}
+      title={
+        <div>
+          <h3>Rankings</h3>
+          <span className={styles.subtitle}>
+            Ranks are based on a percentage of possible points in a puzzle.
+          </span>
+        </div>
+      }
+      size="lg"
+      centered
+      overlayProps={{
+        backgroundOpacity: 0.3,
+        blur: 3,
+      }}
     >
       <div className={styles.modalContent}>
+        <div className={styles.columnInfo}>
+          <span>Rank</span>
+          <span>Minimum score</span>
+        </div>
         <div className={styles.ranks}>
           {ranks.map((rank, index) => {
             const currentRankPoints =

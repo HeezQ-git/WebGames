@@ -1,6 +1,7 @@
 import { fetcher, useFetcherSWR } from '@/lib/fetcher';
 import { useGlobalStore } from '@/stores/global';
 import { Game } from '@/types/globalStore';
+import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -24,7 +25,16 @@ const useGameManager = () => {
     data: games,
     isLoading,
     mutate,
-  } = useFetcherSWR<Game[]>('GET', 'api/game/all');
+  } = useFetcherSWR<Game[]>('GET', 'api/game/all', undefined, {
+    swrOptions: {
+      revalidateOnReconnect: true,
+      revalidateIfStale: true,
+      dedupingInterval: 10000,
+      refreshInterval: 120000,
+    },
+  });
+
+  const { status } = useSession();
 
   const ranksPoints = useMemo(
     () =>
@@ -50,6 +60,11 @@ const useGameManager = () => {
 
   useEffect(() => {
     const manageGames = async () => {
+      if (status === 'loading') return;
+      else if (status === 'unauthenticated')
+        return toast.loading('Creating guest account...', { id: 'guest' });
+      else toast.dismiss('guest');
+
       if (!fetchGames) setFetchGames(mutate);
 
       if (!games?.length && !isLoading && !globalIsLoading && retryCount < 4) {
@@ -116,6 +131,7 @@ const useGameManager = () => {
     getCurrentRank,
     points,
     ranksPoints,
+    status,
   ]);
 };
 

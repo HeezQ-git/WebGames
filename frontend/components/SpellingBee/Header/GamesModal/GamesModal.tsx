@@ -1,25 +1,24 @@
 import React from 'react';
 import Dot from '../../Dot/Dot';
 import { Game } from '@/types/globalStore';
-import Modal from '../../Modal/Modal';
 import styles from './GamesModal.module.css';
 import { useGlobalStore } from '@/stores/global';
 import { useModalStore } from '@/stores/modal';
 import { fetcher } from '@/lib/fetcher';
 import toast from 'react-hot-toast';
-import { ActionIcon, Button, Tooltip } from '@mantine/core';
+import { ActionIcon, Button, Tooltip, Modal } from '@mantine/core';
 import InlineKeys from '../../InlineKeys/InlineKeys';
 import { MdOutlineAdd, MdOutlineDelete, MdOutlineShare } from 'react-icons/md';
 
 const GamesModal = () => {
   const { isGamesModalOpen, setIsGamesModalOpen, setIsNewGameModalOpen } =
     useModalStore();
+
   const {
     isLoading,
     fetchGames,
     games,
     ranks,
-    ranksPoints,
     currentGame,
     resetGame,
     setCurrentGame,
@@ -38,12 +37,16 @@ const GamesModal = () => {
 
   return (
     <Modal
-      classNames={[styles.modal]}
-      open={isGamesModalOpen}
-      closeModal={() => setIsGamesModalOpen(false)}
-      title="Your games"
-      subtitle="Choose an existing game to play or create a new one."
-      noContentPadding
+      opened={isGamesModalOpen}
+      onClose={() => setIsGamesModalOpen(false)}
+      title={<span className="modalTitle">Your games</span>}
+      className={styles.modalContent}
+      size="lg"
+      centered
+      overlayProps={{
+        backgroundOpacity: 0.3,
+        blur: 3,
+      }}
     >
       {!isLoading ? (
         <>
@@ -104,7 +107,7 @@ const GamesModal = () => {
                           openDelay={500}
                         >
                           <ActionIcon
-                            color="red"
+                            color="red.6"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteGame(game.id);
@@ -134,6 +137,7 @@ const GamesModal = () => {
       <div className={styles.newGame}>
         <Button
           fullWidth
+          color="gold"
           leftSection={<MdOutlineAdd size={22} />}
           onClick={() => {
             setIsGamesModalOpen(false);

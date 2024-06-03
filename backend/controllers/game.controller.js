@@ -168,8 +168,6 @@ const deleteGame = async (req, res) => {
       },
     });
 
-    console.log(otherPlayers);
-
     if (!otherPlayers?.length) {
       await prisma.game.delete({
         where: { id: gameId },

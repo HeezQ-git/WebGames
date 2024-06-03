@@ -1,7 +1,4 @@
-.modal {
-  min-width: 350px;
-  padding: 16px;
-
+.modalContent {
   .line {
     width: 100%;
     height: 1px;

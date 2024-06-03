@@ -1,7 +1,4 @@
-.modal {
-  min-width: 350px;
-  padding: 16px;
-
+.modalContent {
   .form {
     display: flex;
     flex-direction: column;

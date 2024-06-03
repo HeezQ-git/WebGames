@@ -5,6 +5,7 @@ import styles from './WordList.module.css';
 import clsx from 'clsx';
 import { useGlobalStore } from '@/stores/global';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
+import { Highlight, Tooltip, UnstyledButton } from '@mantine/core';
 
 const WordList = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,20 +19,40 @@ const WordList = () => {
     }))
     .reverse();
 
+  const pangrams = mappedWords
+    .filter((word) => word.pangram)
+    .map((word) => word.text);
+
   const wordsElement = mappedWords.map((word, index) => (
-    <span
+    <Tooltip
       key={index}
-      className={clsx(styles.word, word.pangram && styles.pangram)}
+      label="Pangram!"
+      position="top"
+      openDelay={750}
+      disabled={!word.pangram}
+      withArrow
     >
-      {word.text}
-    </span>
+      <Highlight
+        key={index}
+        className={clsx(styles.word, word.pangram && styles.pangram)}
+        highlight={word.pangram ? word.text : ' '}
+        color="gold"
+        component="span"
+      >
+        {word.text}
+      </Highlight>
+    </Tooltip>
   ));
 
   return (
     <div className={styles.container}>
-      <div
+      <UnstyledButton
         className={clsx(styles.wordlist, isOpen && styles.open)}
         onClick={() => setIsOpen((prev) => !prev)}
+        tabIndex={0}
+        role="button"
+        aria-label="Toggle word list"
+        aria-expanded={isOpen}
       >
         <div className={styles.header}>
           {!isOpen ? (
@@ -56,7 +77,7 @@ const WordList = () => {
           />
         </div>
         {isOpen ? <div className={styles.words}>{wordsElement}</div> : null}
-      </div>
+      </UnstyledButton>
     </div>
   );
 };

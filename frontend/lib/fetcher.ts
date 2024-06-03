@@ -1,6 +1,5 @@
 "use client";
 import axios from "axios";
-import toast from "react-hot-toast";
 import useSWR, { SWRConfiguration, SWRResponse } from "swr";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -9,7 +8,6 @@ type FetcherOptions = {
   base?: string;
   wholeResponse?: boolean;
   timeout?: number;
-  useAbsoluteLocalhost?: boolean;
 };
 
 const defaultUrlBase = process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : "http://localhost:8000/";
@@ -27,6 +25,13 @@ const axiosBase = (base?: string) =>
       'Access-Control-Expose-Headers': 'Set-Cookie Cookie',
     },
   });
+
+
+const manageCookies = (data: any) => {
+  if (data?.action !== 'COOKIE_SET') return;
+
+  localStorage.setItem('pid', data.pid);
+}
 
 export const fetcher = (method: Method, rest: FetcherOptions | void) => async (url: string, data?: any) => {
   let { base, wholeResponse, timeout } = rest || {};
@@ -71,13 +76,6 @@ export const useFetcherSWR = <T>(
       // eslint-disable-next-line max-params
       onErrorRetry: (error, key, cfg, revalidate, { retryCount }) => {
         if (surpressError) return;
-
-        if (retryCount >= 3) {
-          toast.dismiss();
-          return toast.error('Failed to fetch data', {
-            duration: 5000,
-          });
-        }
         if (error.status === 404) return;
         revalidate({ retryCount });
       },

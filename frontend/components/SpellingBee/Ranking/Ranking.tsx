@@ -3,6 +3,7 @@ import React, { lazy, useState } from 'react';
 import styles from './Ranking.module.css';
 import Dot from '../Dot/Dot';
 import { useGlobalStore } from '@/stores/global';
+import { UnstyledButton } from '@mantine/core';
 const RankingModal = lazy(
   () => import('@/components/SpellingBee/RankingModal/RankingModal')
 );
@@ -22,7 +23,7 @@ const Ranking = () => {
 
   return (
     <>
-      <div className={styles.ranking} onClick={() => setOpen(true)}>
+      <UnstyledButton className={styles.ranking} onClick={() => setOpen(true)}>
         <div className={styles.current}>
           <span className={styles.title}>{currentRankName}</span>
           {currentRankName !== 'Genius' ? (
@@ -41,7 +42,7 @@ const Ranking = () => {
             />
           ))}
         </div>
-      </div>
+      </UnstyledButton>
       <RankingModal open={open} setOpen={setOpen} />
     </>
   );

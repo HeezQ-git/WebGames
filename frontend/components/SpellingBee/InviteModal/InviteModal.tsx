@@ -1,11 +1,10 @@
 import { useGlobalStore } from '@/stores/global';
-import Modal from '@/components/SpellingBee/Modal/Modal';
 import React, { useEffect, useState } from 'react';
 import InlineKeys from '../InlineKeys/InlineKeys';
 import { fetcher, useFetcherSWR } from '@/lib/fetcher';
 import { Game } from '@/types/globalStore';
 import styles from './InviteModal.module.css';
-import { Button } from '@mantine/core';
+import { Button, Modal } from '@mantine/core';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -41,11 +40,14 @@ const InviteModal = () => {
 
   return !isLoading && currentGame !== invite ? (
     <Modal
-      open={!!invite}
-      closeModal={() => setInvite(null)}
-      noContentPadding
-      title="Invitation"
-      subtitle="You have been invited to a game!"
+      opened={!!invite}
+      onClose={() => setInvite(null)}
+      title={<span className="modalTitle">Invitation to a game</span>}
+      centered
+      overlayProps={{
+        backgroundOpacity: 0.3,
+        blur: 3,
+      }}
     >
       <div className={styles.modalContent}>
         <InlineKeys

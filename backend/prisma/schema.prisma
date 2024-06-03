@@ -16,6 +16,7 @@ model Word {
 model Player {
   id        String       @id @default(auto()) @map("_id") @db.ObjectId
   name      String       @unique
+  password  String?
   cookie    String?      @unique
   games     PlayerGame[]
   createdAt DateTime     @default(now())

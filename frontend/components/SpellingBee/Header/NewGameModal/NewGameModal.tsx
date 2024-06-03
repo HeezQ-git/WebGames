@@ -1,9 +1,8 @@
 /* eslint-disable indent */
 import React from 'react';
-import Modal from '../../Modal/Modal';
 import styles from './NewGameModal.module.css';
 import { useModalStore } from '@/stores/modal';
-import { Button, Checkbox, PinInput, Tooltip } from '@mantine/core';
+import { Button, Checkbox, PinInput, Tooltip, Modal } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import toast from 'react-hot-toast';
 import { fetcher } from '@/lib/fetcher';
@@ -76,15 +75,19 @@ const NewGameModal = () => {
 
   return (
     <Modal
-      classNames={[styles.modal]}
-      open={isNewGameModalOpen}
-      closeModal={() => {
+      opened={isNewGameModalOpen}
+      onClose={() => {
         setIsNewGameModalOpen(false);
+        setIsGamesModalOpen(true);
         form.reset();
       }}
-      title="Create a new game"
-      subtitle="Random or custom letters?"
-      noContentPadding
+      title={<span className="modalTitle">Create a new game</span>}
+      className={styles.modalContent}
+      centered
+      overlayProps={{
+        backgroundOpacity: 0.3,
+        blur: 3,
+      }}
     >
       <form className={styles.form} onSubmit={form.onSubmit(handleSubmit)}>
         <Checkbox
@@ -95,7 +98,14 @@ const NewGameModal = () => {
           {...form.getInputProps('randomLetters')}
         />
 
-        <Tooltip label="Center letter">
+        <Tooltip
+          label="Center letter"
+          events={{
+            hover: true,
+            focus: true,
+            touch: true,
+          }}
+        >
           <PinInput
             placeholder="X"
             length={1}
@@ -106,7 +116,14 @@ const NewGameModal = () => {
           />
         </Tooltip>
 
-        <Tooltip label="Other letters">
+        <Tooltip
+          label="Other letters"
+          events={{
+            hover: true,
+            focus: true,
+            touch: true,
+          }}
+        >
           <PinInput
             placeholder="X"
             title="Other letters"
@@ -118,12 +135,11 @@ const NewGameModal = () => {
           />
         </Tooltip>
 
-        {form.errors.centerLetter ||
-          (form.errors.letters && (
-            <div className={styles.error}>
-              {form.errors.centerLetter || form.errors.letters}
-            </div>
-          ))}
+        {(form.errors.centerLetter || form.errors.letters) && (
+          <div className={styles.error}>
+            {form.errors.centerLetter || form.errors.letters}
+          </div>
+        )}
 
         <Button color="var(--darker-gold)" type="submit">
           Create

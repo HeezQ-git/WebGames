@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Button.module.css';
 import clsx from 'clsx';
+import { UnstyledButton } from '@mantine/core';
 
 const Button = ({
   children,
@@ -20,7 +21,7 @@ const Button = ({
   icon?: React.ReactNode;
 }) => {
   return (
-    <button
+    <UnstyledButton
       className={clsx(
         styles.button,
         type === 'icon' && styles.icon,
@@ -29,10 +30,11 @@ const Button = ({
         fullWidth && styles.fullWidth
       )}
       onClick={onClick}
+      aria-label={icon ? 'Button refresh' : `Button ${children}`}
     >
       {icon && <div className={styles.iconElement}>{icon}</div>}
       {children}
-    </button>
+    </UnstyledButton>
   );
 };
 

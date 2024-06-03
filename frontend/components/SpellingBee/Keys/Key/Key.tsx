@@ -14,7 +14,9 @@ const Key = ({
   return (
     <div
       className={clsx(styles.keyBox, centerKey && styles.centerKey)}
-      onClick={() => addLetter(letter!)}
+      onClick={() => letter && addLetter(letter)}
+      data-testid="key"
+      tabIndex={-1}
     >
       <span className={styles.keyLetter}>{letter}</span>
     </div>

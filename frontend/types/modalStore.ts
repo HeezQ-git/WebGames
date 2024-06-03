@@ -4,4 +4,7 @@ export interface ModalStore {
 
   isNewGameModalOpen: boolean;
   setIsNewGameModalOpen: (isNewGameModalOpen: boolean) => void;
+
+  isSettingsModalOpen: boolean;
+  setIsSettingsModalOpen: (isSettingsModalOpen: boolean) => void;
 }

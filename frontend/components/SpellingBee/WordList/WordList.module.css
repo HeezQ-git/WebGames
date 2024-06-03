@@ -78,8 +78,9 @@
       }
 
       .pangram {
-        background: var(--golden);
-        margin-inline: 2px;
+        & > mark {
+          padding-inline: 2px;
+        }
       }
 
       .noWords {

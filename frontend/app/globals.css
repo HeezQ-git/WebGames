@@ -6,9 +6,12 @@
 
 html,
 body {
-  max-width: 100vw;
-  height: 100vh;
+  max-width: 100dvw;
+  min-height: calc(100dvh - 60px);
+  height: 100dvh;
   overflow-x: hidden;
+  transition: all 0.1s ease !important;
+  scroll-behavior: smooth;
 }
 
 a {
@@ -17,20 +20,57 @@ a {
 }
 
 :root {
-  --golden: #ffdb0f; /* hsl(51, 100%, 53%) */
-  --darker-gold: #fad400; /* hsl(51, 100%, 49%) */
-
-  --grey: hsl(0, 0%, 40%);
-  --mid-grey: hsl(0, 0%, 60%);
-  --light-grey: hsl(0, 0%, 86%);
-
-  --light-accent: hsl(0, 0%, 96%);
-  --mid-accent: hsl(0, 0%, 94%);
-  --dark-accent: hsl(0, 0%, 90%);
-
-  --background: hsl(0, 0%, 99%);
-
   --red: hsl(5, 69%, 60%);
   --dark-red: hsl(5, 69%, 56%);
   --darkest-red: hsl(5, 69%, 52%);
+
+  @mixin light-root {
+    --golden: hsl(51, 100%, 53%);
+    --darker-gold: hsl(51, 100%, 49%);
+
+    --grey: hsl(0, 0%, 40%);
+    --mid-grey: hsl(0, 0%, 60%);
+    --light-grey: hsl(0, 0%, 86%);
+
+    --light-accent: hsl(0, 0%, 96%);
+    --mid-accent: hsl(0, 0%, 94%);
+    --dark-accent: hsl(0, 0%, 90%);
+
+    --background: hsl(0, 0%, 99%);
+  }
+
+  @mixin dark-root {
+    --golden: darken(hsl(51, 100%, 53%), 0.1);
+    --darker-gold: darken(hsl(51, 100%, 49%), 0.1);
+
+    --grey: var(--mantine-color-dark-5);
+    --mid-grey: var(--mantine-color-dark-4);
+    --light-grey: var(--mantine-color-dark-3);
+
+    --light-accent: var(--mantine-color-dark-4);
+    --mid-accent: var(--mantine-color-dark-5);
+    --dark-accent: var(--mantine-color-dark-6);
+
+    --background: var(--mantine-color-body);
+  }
+}
+
+.toaster {
+  border: 1px solid var(--light-grey);
+
+  @mixin dark {
+    background: var(--mantine-color-dark-5);
+    color: var(--mantine-color-text);
+    border: 1px solid var(--mantine-color-dark-3);
+  }
+}
+
+.mainContent {
+  width: 100%;
+  height: calc(100% - 60px);
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
 }

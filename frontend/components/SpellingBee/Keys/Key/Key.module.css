@@ -26,12 +26,44 @@
     font-weight: bold;
     color: black;
   }
+
+  @mixin dark {
+    background-color: var(--mantine-color-dark-5);
+
+    &:hover {
+      background-color: var(--mantine-color-dark-4);
+    }
+
+    .keyLetter {
+      color: var(--mantine-color-text);
+    }
+  }
 }
 
 .centerKey {
-  background-color: var(--golden);
+  background-color: var(--mantine-color-gold-6) !important;
 
   &:hover {
-    background-color: hsl(51, 100%, 49%);
+    background-color: var(--mantine-color-gold-5) !important;
+  }
+
+  &:active {
+    background-color: hsl(51, 100%, 53%) !important;
+  }
+
+  @mixin dark {
+    background-color: var(--golden) !important;
+
+    &:hover {
+      background-color: lighten(var(--golden), 0.05) !important;
+    }
+
+    &:active {
+      background-color: lighten(var(--golden), 0.1) !important;
+    }
+
+    .keyLetter {
+      color: var(--mantine-color-dark-8);
+    }
   }
 }

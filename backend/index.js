@@ -1,12 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { v4: uuidv4 } = require('uuid');
 const cookieParser = require('cookie-parser');
 const prisma = require('./lib/prisma');
 
+const authRoutes = require('./routes/auth.routes');
 const wordRoutes = require('./routes/word.routes');
 const gameRoutes = require('./routes/game.routes');
+const playerRoutes = require('./routes/player.routes');
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -26,43 +27,31 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(async (req, res, next) => {
-  let playerId = req.cookies.playerId;
+  if (req.path === '/api/auth/signin') return next();
 
-  if (!playerId) {
-    playerId = uuidv4();
+  let playerCookie = req.cookies.pid;
 
-    res.cookie('playerId', playerId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 365 * 24 * 60 * 60 * 1000,
-    });
-
-    res.status(200).json({ message: 'Cookie set' });
-    return;
+  if (!playerCookie) {
+    return res
+      .status(403)
+      .json({ message: 'Player ID not found. Please sign in to continue' });
   } else {
     let player = await prisma.player.findUnique({
-      where: { cookie: playerId },
-      select: {
-        id: true,
-      },
+      where: { cookie: playerCookie },
     });
 
     if (!player) {
       try {
         player = await prisma.player.create({
           data: {
-            name: `Player-${playerId.substring(0, 8)}`,
-            cookie: playerId,
+            name: `Player-${playerCookie.substring(0, 8)}`,
+            cookie: playerCookie,
           },
         });
       } catch (error) {
         if (error.code === 'P2002') {
           player = await prisma.player.findUnique({
-            where: { cookie: playerId },
-            select: {
-              id: true,
-            },
+            where: { cookie: playerCookie },
           });
         } else {
           console.error('Error creating player:', error);
@@ -73,6 +62,7 @@ app.use(async (req, res, next) => {
     }
 
     req.playerId = player.id;
+    req.playerCookie = playerCookie;
   }
 
   next();
@@ -80,8 +70,10 @@ app.use(async (req, res, next) => {
 
 dotenv.config();
 
+app.use('/api/auth', authRoutes);
 app.use('/api/word', wordRoutes);
 app.use('/api/game', gameRoutes);
+app.use('/api/player', playerRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);
