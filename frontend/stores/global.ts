@@ -1,5 +1,4 @@
-import { fetcher } from '@/lib/fetcher';
-import { Game, GlobalStore } from '@/types/globalStore';
+import { CorrectWord, Game, GlobalStore } from '@/types/globalStore';
 import toast from 'react-hot-toast';
 import { create } from 'zustand';
 
@@ -83,20 +82,48 @@ export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get
 
     if (get().foundWords.includes(word.toLowerCase())) return toast.error('Already found!');
 
-    const id = toast.loading('Checking...');
-    const response = await fetcher('POST')('api/word/check', { gameId: get().currentGame, word, profanesAllowed: true });
+    const { correctWords } = get().games.find((game: Game) => game.id === get().currentGame);
 
-    if (response?.error) return toast.error(response.error, { id });
-    else if (response?.message) {
-      toast.success(`${response.message} +${response.wordScore}pts`, { id });
+    const foundWord = correctWords.find((correctWord: CorrectWord) => correctWord.word === word);
 
-      if (response.newScore >= get().ranksPoints[0].points)
-        get().dropConfetti();
+    if (foundWord) {
+      let message = '';
+      const score = foundWord.points;
+
+      if ((new Set(foundWord.word)).size === get().keys?.length) message = 'Pangram!';
+      else if (score === 1) message = 'Good!';
+      else if (score === 5 || score === 6) message = 'Great!';
+      else if (score >= 7) message = 'Awesome!';
+
+      toast.success(`${message} +${foundWord.points}pts`);
+
+      const newScore = get().points + foundWord.points;
 
       set({
-        foundWords: response.wordList,
-        points: response.newScore,
+        foundWords: [...get().foundWords, word],
+        points: newScore,
       });
+
+      if (get().points >= get().ranksPoints[0].points)
+        get().dropConfetti();
+    } else {
+      toast.error('Word is incorrect');
     }
+
+    // const id = toast.loading('Checking...');
+    // const response = await fetcher('POST')('api/word/check', { gameId: get().currentGame, word, profanesAllowed: true });
+
+    // if (response?.error) return toast.error(response.error, { id });
+    // else if (response?.message) {
+    //   toast.success(`${response.message} +${response.wordScore}pts`, { id });
+
+    //   if (response.newScore >= get().ranksPoints[0].points)
+    //     get().dropConfetti();
+
+    //   set({
+    //     foundWords: response.wordList,
+    //     points: response.newScore,
+    //   });
+    // }
   },
 }));

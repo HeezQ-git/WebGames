@@ -7,32 +7,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+type CorrectWord {
+  word      String
+  isProfane Boolean
+  isPangram Boolean
+  points    Int
+}
+
 model Word {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   word      String  @unique
   isProfane Boolean @default(false)
+  Game      Game?   @relation(fields: [gameId], references: [id])
+  gameId    String? @db.ObjectId
 }
 
 model Player {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  name      String       @unique
-  password  String?
-  cookie    String?      @unique
-  games     PlayerGame[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  name            String       @unique
+  password        String?
+  cookie          String?      @unique
+  profanesAllowed Boolean      @default(false)
+  games           PlayerGame[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model Game {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
   letters      String[]
   centerLetter String
   enteredWords String[]
+  correctWords CorrectWord[]
   maximumScore Int
-  score        Int          @default(0)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  score        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   players      PlayerGame[]
+  Word         Word[]
 }
 
 model PlayerGame {

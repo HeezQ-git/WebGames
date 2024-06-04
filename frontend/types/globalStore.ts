@@ -1,8 +1,15 @@
+export type CorrectWord = {
+  word: string;
+  isProfane: boolean;
+  points: number;
+}
+
 export type Game = {
   id: string;
   centerLetter: string;
   letters: string[];
   enteredWords: string[];
+  correctWords: CorrectWord[];
   maximumScore: number;
   score: number;
 }

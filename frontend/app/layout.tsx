@@ -7,6 +7,8 @@ import Session from '@/components/common/SessionWrapper/SessionWrapper';
 import Header from '@/components/common/Header/Header';
 import { Toaster } from 'react-hot-toast';
 import SettingsModal from '@/components/common/SettingsModal/SettingsModal';
+import { Suspense } from 'react';
+import Loading from '@/components/common/Loading/Loading';
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -71,7 +73,9 @@ export default function RootLayout({
         <MantineProvider theme={theme}>
           <Session>
             <Header />
-            <main className="mainContent">{children}</main>
+            <main className="mainContent">
+              <Suspense fallback={<Loading />}>{children}</Suspense>
+            </main>
             <Toaster toastOptions={{ className: 'toaster' }} />
             <SettingsModal />
           </Session>

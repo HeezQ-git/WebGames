@@ -14,35 +14,14 @@ import Confetti from 'react-confetti';
 import { useViewportSize } from '@mantine/hooks';
 import { useGlobalStore } from '@/stores/global';
 import InviteModal from '@/components/SpellingBee/InviteModal/InviteModal';
-import { Highlight, Loader, Stack } from '@mantine/core';
+import Loading from '@/components/common/Loading/Loading';
 
 const SpellingBee = () => {
   const { games, currentGame, confetti } = useGlobalStore();
   const { height, width } = useViewportSize();
 
-  const loadingFallback = (
-    <Stack className={styles.loadingContainer} gap="sm">
-      <Highlight
-        fz="32px"
-        ta="center"
-        highlight="Loading"
-        highlightStyles={{
-          animation: 'loadingGradient 2s ease infinite alternate',
-          backgroundImage:
-            'linear-gradient(45deg, var(--mantine-color-orange-7), var(--mantine-color-yellow-5))',
-          fontWeight: 700,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}
-      >
-        Loading
-      </Highlight>
-      <Loader size="xl" type="bars" />
-    </Stack>
-  );
-
   return (
-    <Suspense fallback={loadingFallback}>
+    <Suspense fallback={<Loading />}>
       <div className={styles.container}>
         {games?.length !== 0 && currentGame !== '' ? (
           <div className={styles.content}>
@@ -73,7 +52,7 @@ const SpellingBee = () => {
             </>
           </div>
         ) : (
-          loadingFallback
+          <Loading />
         )}
         <InputManager />
         <GameManager />

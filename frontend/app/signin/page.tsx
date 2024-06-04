@@ -13,7 +13,7 @@ import {
 import { useForm } from '@mantine/form';
 import { MdOutlineInfo, MdOutlineLock, MdOutlineLogin } from 'react-icons/md';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import UsernameInput from '@/components/common/CustomInputs/UsernameInput';
@@ -26,6 +26,7 @@ type FormData = {
 const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { update } = useSession();
 
   const form = useForm<FormData>({
     initialValues: {
@@ -50,6 +51,7 @@ const SignIn = () => {
     } else {
       toast.success('Successfully signed in!');
       router.back();
+      await update({ name: data.username });
     }
 
     setLoading(false);

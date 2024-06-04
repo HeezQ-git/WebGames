@@ -16,14 +16,18 @@ import {
   MdOutlineLogout,
   MdOutlineSettings,
 } from 'react-icons/md';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useModalStore } from '@/stores/modal';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
   const { status, data } = useSession();
+
   const { colorScheme, setColorScheme } = useMantineColorScheme();
   const { setIsSettingsModalOpen } = useModalStore();
+
+  const router = useRouter();
 
   return (
     <header className={styles.header}>
@@ -80,7 +84,7 @@ const Header = () => {
                 disabled={status === 'loading'}
                 color="red"
                 leftSection={<MdOutlineLogout size={16} />}
-                onClick={() => signOut({ callbackUrl: '/' })}
+                onClick={() => router.push('/signout')}
               >
                 Sign out
               </Menu.Item>

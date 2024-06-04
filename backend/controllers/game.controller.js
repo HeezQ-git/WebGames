@@ -58,23 +58,33 @@ const createGame = async (req, res) => {
           contains: centerLetter,
           mode: 'insensitive',
         },
-        isProfane: profanesAllowed === 'true' || !!profanesAllowed,
+        isProfane:
+          typeof profanesAllowed === 'string'
+            ? profanesAllowed === 'true'
+            : profanesAllowed,
       },
-      select: { word: true },
+      select: { word: true, isProfane },
     });
 
-    words = words.filter((word) => word.word.match(pattern));
+    words = words
+      .filter((word) => word.word.match(pattern))
+      .map((word) => {
+        const { word: wordText, isProfane } = word;
+        const { wordScore, isPangram } = getWordScore(wordText, letters);
+        return { word: wordText, points: wordScore, isPangram, isProfane };
+        // check if mapping is correct!!! THEN DO IT FOR FRONTEND (ALSO CHECK DB)
+      });
 
-    const maximumScore = words.reduce(
-      (score, word) => score + getWordScore(word.word, letters).wordScore,
-      0
-    );
+    const maximumScore = words.reduce((score, word) => score + word.points, 0);
+
+    console.log(words);
 
     const game = await prisma.game.create({
       data: {
         letters,
         centerLetter,
         enteredWords: [],
+        correctWords: words,
         maximumScore,
       },
     });

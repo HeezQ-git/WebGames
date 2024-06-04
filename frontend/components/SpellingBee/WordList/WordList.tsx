@@ -19,10 +19,6 @@ const WordList = () => {
     }))
     .reverse();
 
-  const pangrams = mappedWords
-    .filter((word) => word.pangram)
-    .map((word) => word.text);
-
   const wordsElement = mappedWords.map((word, index) => (
     <Tooltip
       key={index}

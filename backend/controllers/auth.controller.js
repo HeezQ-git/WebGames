@@ -51,21 +51,23 @@ const signIn = async (req, res) => {
     const { asGuest, username, password, oldPid } = req.body;
 
     if (asGuest) {
-      playerId = uuidv4();
+      const playerId = uuidv4();
 
-      player = await prisma.player.create({
+      const player = await prisma.player.create({
         data: {
           name: `Player-${playerId.substring(0, 8)}`,
           cookie: playerId,
         },
       });
 
-      return res
-        .status(200)
-        .send({ message: 'User signed in as guest', playerCookie: playerId });
+      return res.status(200).send({
+        message: 'User signed in as guest',
+        playerCookie: playerId,
+        profanesAllowed: player.profanesAllowed,
+      });
     }
 
-    const user = await prisma.player.findUnique({
+    const player = await prisma.player.findUnique({
       where: {
         name: username,
       },
@@ -73,10 +75,10 @@ const signIn = async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(
       password,
-      user?.password || ''
+      player?.password || ''
     );
 
-    if (!isPasswordValid || !user) {
+    if (!isPasswordValid || !player) {
       return res.status(400).send({ message: 'Invalid credentials' });
     }
 
@@ -124,20 +126,11 @@ const signIn = async (req, res) => {
 
     return res.status(200).send({
       message: 'User signed in successfully',
-      playerCookie: user.cookie,
+      playerCookie: player.cookie,
+      profanesAllowed: player.profanesAllowed,
     });
   } catch (error) {
     console.log(`Error in auth.controller signIn`, error.message);
-    res.status(500).send({ message: 'Internal Server Error' });
-  }
-};
-
-const signOut = async (req, res) => {
-  try {
-    res.clearCookie('playerCookie');
-    return res.status(200).send({ message: 'User signed out successfully' });
-  } catch (error) {
-    console.log(`Error in auth.controller signOut`, error.message);
     res.status(500).send({ message: 'Internal Server Error' });
   }
 };
@@ -170,6 +163,5 @@ const checkUsername = async (req, res) => {
 module.exports = {
   signUp,
   signIn,
-  signOut,
   checkUsername,
 };
