@@ -18,10 +18,7 @@ const Header = () => {
       <Image src={Logo} alt="Spelling Bee" className={styles.logo} />
       <UnstyledButton
         className={styles.button}
-        onClick={async () => {
-          await fetchGames?.();
-          setIsGamesModalOpen(true);
-        }}
+        onClick={() => setIsGamesModalOpen(true)}
       >
         Your games
       </UnstyledButton>

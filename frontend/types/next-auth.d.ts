@@ -5,6 +5,7 @@ declare module "next-auth" {
     user: {
       pid: string;
       name: string;
+      profanesAllowed: boolean;
     } & DefaultSession["user"];
   }
 }

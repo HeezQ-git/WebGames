@@ -1,7 +1,7 @@
 const express = require('express');
-const { checkWord } = require('../controllers/word.controller');
+const { submitWord } = require('../controllers/word.controller');
 const router = express.Router();
 
-router.post('/check', checkWord);
+router.post('/submit', submitWord);
 
 module.exports = router;

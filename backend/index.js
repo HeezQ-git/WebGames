@@ -55,7 +55,10 @@ app.use(async (req, res, next) => {
           });
         } else {
           console.error('Error creating player:', error);
-          res.status(500).send({ message: 'Internal Server Error' });
+          res
+            .status(500)
+            .send({ message: 'Internal Server Error' })
+            .redirect('/signout');
           return;
         }
       }

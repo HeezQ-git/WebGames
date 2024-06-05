@@ -59,22 +59,15 @@ export const useFetcherSWR = <T>(
   } | void
 ): SWRResponse<T | undefined, any> => {
 
-  const { surpressError } = dataToSend || {} as any;
-
   return useSWR<T | undefined>(
     [apiURL, dataToSend],
     ([url, data]: [string, object]) => (apiURL ? fetcher(method, options?.fetcherOptions)(url, data) : undefined),
     {
       shouldRetryOnError: true,
-      errorRetryInterval: 3000,
+      errorRetryInterval: 9000,
       errorRetryCount: 3,
       revalidateOnFocus: true,
-      // eslint-disable-next-line max-params
-      onErrorRetry: (error, key, cfg, revalidate, { retryCount }) => {
-        if (surpressError) return;
-        if (error.status === 404) return;
-        revalidate({ retryCount });
-      },
+      keepPreviousData: true,
       ...options?.swrOptions,
     }
   );

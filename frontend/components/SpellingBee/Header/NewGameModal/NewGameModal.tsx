@@ -1,21 +1,23 @@
 /* eslint-disable indent */
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './NewGameModal.module.css';
 import { useModalStore } from '@/stores/modal';
-import { Button, Checkbox, PinInput, Tooltip, Modal } from '@mantine/core';
+import { Button, Checkbox, PinInput, Modal, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import toast from 'react-hot-toast';
 import { fetcher } from '@/lib/fetcher';
 import { useGlobalStore } from '@/stores/global';
+import { MdOutlineCreate } from 'react-icons/md';
 
 const NewGameModal = () => {
   const { isNewGameModalOpen, setIsNewGameModalOpen, setIsGamesModalOpen } =
     useModalStore();
-  const { fetchGames } = useGlobalStore();
+  const { fetchGames, session } = useGlobalStore();
 
   const form = useForm({
     initialValues: {
       randomLetters: true,
+      profanesAllowed: session?.data?.user?.profanesAllowed ?? false,
       centerLetter: '',
       letters: '',
     },
@@ -50,13 +52,14 @@ const NewGameModal = () => {
         fetcher('POST')(
           'api/game/create',
           values.randomLetters
-            ? undefined
+            ? { profanesAllowed: values.profanesAllowed }
             : {
                 letters: [
                   ...values.letters.toUpperCase().split(''),
                   values.centerLetter.toUpperCase(),
                 ],
                 centerLetter: values.centerLetter.toUpperCase(),
+                profanesAllowed: values.profanesAllowed,
               }
         ),
         {
@@ -72,6 +75,13 @@ const NewGameModal = () => {
       setIsGamesModalOpen(true);
     }
   };
+
+  useEffect(() => {
+    form.setFieldValue(
+      'profanesAllowed',
+      session?.data?.user?.profanesAllowed ?? false
+    );
+  }, [session?.data?.user?.profanesAllowed]);
 
   return (
     <Modal
@@ -93,47 +103,51 @@ const NewGameModal = () => {
         <Checkbox
           defaultChecked
           label="Use random letters?"
-          color="var(--darker-gold)"
+          description="If checked, random letters will be generated"
+          color="gold.7"
+          styles={{ description: { marginTop: 0 } }}
           key={form.key('randomLetters')}
           {...form.getInputProps('randomLetters')}
         />
 
-        <Tooltip
-          label="Center letter"
-          events={{
-            hover: true,
-            focus: true,
-            touch: true,
-          }}
-        >
-          <PinInput
-            placeholder="X"
-            length={1}
-            disabled={form.values.randomLetters}
-            key={form.key('centerLetter')}
-            {...form.getInputProps('centerLetter')}
-            value={values.centerLetter.toUpperCase()}
-          />
-        </Tooltip>
+        {!values.randomLetters && (
+          <>
+            <Stack gap="0">
+              <Text size="md">Center letter</Text>
+              <PinInput
+                placeholder="X"
+                length={1}
+                disabled={form.values.randomLetters}
+                key={form.key('centerLetter')}
+                {...form.getInputProps('centerLetter')}
+                value={values.centerLetter.toUpperCase()}
+              />
+            </Stack>
 
-        <Tooltip
-          label="Other letters"
-          events={{
-            hover: true,
-            focus: true,
-            touch: true,
-          }}
-        >
-          <PinInput
-            placeholder="X"
-            title="Other letters"
-            length={6}
-            disabled={form.values.randomLetters}
-            key={form.key('letters')}
-            {...form.getInputProps('letters')}
-            value={values.letters.toUpperCase()}
-          />
-        </Tooltip>
+            <Stack gap="0">
+              <Text size="md">Other letters</Text>
+              <PinInput
+                placeholder="X"
+                title="Other letters"
+                length={6}
+                disabled={form.values.randomLetters}
+                key={form.key('letters')}
+                {...form.getInputProps('letters')}
+                value={values.letters.toUpperCase()}
+              />
+            </Stack>
+          </>
+        )}
+
+        <Checkbox
+          label="Allow profane words in this game?"
+          description="Parental advisory is recommended"
+          color="gold.7"
+          styles={{ description: { marginTop: 0 } }}
+          key={form.key('profanesAllowed')}
+          {...form.getInputProps('profanesAllowed')}
+          checked={form.values.profanesAllowed}
+        />
 
         {(form.errors.centerLetter || form.errors.letters) && (
           <div className={styles.error}>
@@ -141,7 +155,11 @@ const NewGameModal = () => {
           </div>
         )}
 
-        <Button color="var(--darker-gold)" type="submit">
+        <Button
+          leftSection={<MdOutlineCreate size={16} />}
+          color="gold.7"
+          type="submit"
+        >
           Create
         </Button>
       </form>

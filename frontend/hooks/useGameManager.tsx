@@ -19,6 +19,8 @@ const useGameManager = () => {
     setFetchGames,
     setGames,
     setCurrentGame,
+    setProfanesAllowed,
+    setSession,
   } = useGlobalStore();
 
   const {
@@ -27,14 +29,14 @@ const useGameManager = () => {
     mutate,
   } = useFetcherSWR<Game[]>('GET', 'api/game/all', undefined, {
     swrOptions: {
-      revalidateOnReconnect: true,
-      revalidateIfStale: true,
-      dedupingInterval: 10000,
-      refreshInterval: 120000,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      errorRetryInterval: 60000,
     },
   });
 
-  const { status } = useSession();
+  const session = useSession();
 
   const ranksPoints = useMemo(
     () =>
@@ -61,14 +63,14 @@ const useGameManager = () => {
   useEffect(() => {
     const manageGames = async () => {
       setIsLoading(true);
-      if (status === 'loading') return;
-      else if (status === 'unauthenticated')
+      if (session.status === 'loading') return;
+      else if (session.status === 'unauthenticated')
         return toast.loading('Creating guest account...', { id: 'guest' });
       else toast.dismiss('guest');
 
       if (!fetchGames) setFetchGames(mutate);
 
-      if (!games?.length && !isLoading && !globalIsLoading && retryCount < 4) {
+      if (!games?.length && !isLoading && !globalIsLoading) {
         const toastId = toast.loading('Creating a new game...');
         setIsLoading(true);
 
@@ -76,9 +78,12 @@ const useGameManager = () => {
           const game = await fetcher('POST')('api/game/create');
 
           if (game?.id) {
-            await mutate();
-            setCurrentGame(game.id);
-            toast.success('Game created!', { id: toastId });
+            if (retryCount < 4) {
+              await mutate();
+              setCurrentGame(game.id);
+              toast.success('Game created!', { id: toastId });
+              setRetryCount((prev) => prev + 1);
+            }
           } else {
             throw new Error('Failed to create a new game');
           }
@@ -89,7 +94,6 @@ const useGameManager = () => {
           });
         } finally {
           setIsLoading(false);
-          setRetryCount((prev) => prev + 1);
         }
       }
 
@@ -134,8 +138,17 @@ const useGameManager = () => {
     getCurrentRank,
     points,
     ranksPoints,
-    status,
+    session.status,
+    retryCount,
   ]);
+
+  useEffect(() => {
+    setSession(session);
+    if (session?.status === 'loading' || session?.status === 'unauthenticated')
+      return;
+
+    setProfanesAllowed(session?.data?.user?.profanesAllowed || false);
+  }, [setSession, session?.status, session?.data, setProfanesAllowed]);
 };
 
 export default useGameManager;

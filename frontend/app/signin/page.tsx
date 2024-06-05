@@ -13,10 +13,11 @@ import {
 import { useForm } from '@mantine/form';
 import { MdOutlineInfo, MdOutlineLock, MdOutlineLogin } from 'react-icons/md';
 import Link from 'next/link';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import UsernameInput from '@/components/common/CustomInputs/UsernameInput';
+import { useGlobalStore } from '@/stores/global';
 
 type FormData = {
   username: string;
@@ -26,7 +27,7 @@ type FormData = {
 const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { update } = useSession();
+  const { session } = useGlobalStore();
 
   const form = useForm<FormData>({
     initialValues: {
@@ -43,15 +44,15 @@ const SignIn = () => {
       redirect: false,
     });
 
-    if (res?.status !== 200) {
+    if (res?.status === 200) {
+      toast.success('Successfully signed in!');
+      await session?.update({ name: data.username });
+      router.back();
+    } else {
       form.setErrors({
         username: true,
         password: 'Invalid credentials',
       });
-    } else {
-      toast.success('Successfully signed in!');
-      router.back();
-      await update({ name: data.username });
     }
 
     setLoading(false);

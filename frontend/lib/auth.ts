@@ -41,6 +41,7 @@ export const authOptions = (req: any, res: any) => ({
 
             return {
               pid: response?.playerCookie,
+              profanesAllowed: response?.profanesAllowed,
               name: 'Guest',
             };
           }
@@ -60,6 +61,7 @@ export const authOptions = (req: any, res: any) => ({
           if (response?.playerCookie) {
             return {
               pid: response?.playerCookie,
+              profanesAllowed: response?.profanesAllowed,
               name: username,
             };
           }
@@ -74,9 +76,13 @@ export const authOptions = (req: any, res: any) => ({
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }: any) {
-      if (user) token.pid = user.pid;
-      if (trigger === 'update' && session?.name) {
-        token.name = session.name;
+      if (user?.pid) token.pid = user.pid;
+      if (user?.profanesAllowed) token.profanesAllowed = user.profanesAllowed;
+
+      if (trigger === 'update' && session) {
+        Object.entries(session).forEach(([key, value]) => {
+          token[key] = value;
+        });
       }
 
       return token;
@@ -84,6 +90,7 @@ export const authOptions = (req: any, res: any) => ({
     async session({ session, token }: any) {
       if (token.name) session.user.name = token.name;
       if (token.pid) session.user.pid = token.pid;
+      session.user.profanesAllowed = token.profanesAllowed;
 
       return session;
     },

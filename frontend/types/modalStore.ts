@@ -7,4 +7,7 @@ export interface ModalStore {
 
   isSettingsModalOpen: boolean;
   setIsSettingsModalOpen: (isSettingsModalOpen: boolean) => void;
+
+  isDangerModalOpen: boolean;
+  setIsDangerModalOpen: (isDangerModalOpen: boolean) => void;
 }

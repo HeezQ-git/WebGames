@@ -52,8 +52,8 @@ model PlayerGame {
   playerId String @db.ObjectId
   gameId   String @db.ObjectId
 
-  player Player @relation(fields: [playerId], references: [id])
-  game   Game   @relation(fields: [gameId], references: [id])
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@unique([playerId, gameId])
   @@index([gameId])

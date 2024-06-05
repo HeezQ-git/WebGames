@@ -18,7 +18,6 @@ const roboto = Roboto({
 const theme = createTheme({
   primaryColor: 'orange',
   primaryShade: 5,
-  autoContrast: true,
   colors: {
     gold: [
       '#fffce1',

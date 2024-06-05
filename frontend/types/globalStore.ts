@@ -1,5 +1,8 @@
+import { Session } from "next-auth";
+
 export type CorrectWord = {
   word: string;
+  isPanagram: boolean;
   isProfane: boolean;
   points: number;
 }
@@ -14,9 +17,25 @@ export type Game = {
   score: number;
 }
 
+type SessionElement = {
+  update: any;
+  data: Session;
+  status: "authenticated";
+} | {
+  update: any;
+  data: null;
+  status: "loading" | "unauthenticated";
+}
+
 export interface GlobalStore {
   confetti: boolean;
   dropConfetti: () => void;
+
+  session: null | SessionElement;
+  setSession: (session: null | SessionElement) => void;
+
+  profanesAllowed: boolean;
+  setProfanesAllowed: (profanesAllowed: boolean) => void;
 
   invite: null | string;
   setInvite: (invite: null | string) => void;

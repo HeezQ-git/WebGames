@@ -17,7 +17,7 @@ import {
   MdOutlinePersonAdd,
 } from 'react-icons/md';
 import Link from 'next/link';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useDebouncedValue } from '@mantine/hooks';
 import { fetcher } from '@/lib/fetcher';
 import toast from 'react-hot-toast';
@@ -30,6 +30,7 @@ import {
 } from '@/lib/validation';
 import UsernameInput from '@/components/common/CustomInputs/UsernameInput';
 import CustomPasswordInput from '@/components/common/CustomInputs/PasswordInput';
+import { useGlobalStore } from '@/stores/global';
 
 type FormData = {
   username: string;
@@ -41,7 +42,7 @@ const SignIn = () => {
   const [submitting, setSubmitting] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const router = useRouter();
-  const { update } = useSession();
+  const { session } = useGlobalStore();
 
   const form = useForm<FormData>({
     initialValues: {
@@ -94,7 +95,7 @@ const SignIn = () => {
         });
       } else {
         toast.success('Successfully signed up!');
-        await update({ name: data.username });
+        await session?.update({ name: data.username });
         router.back();
         router.back();
       }

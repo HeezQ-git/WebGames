@@ -16,8 +16,8 @@ const EditableField = ({
       <Text fz="md" fw="600">
         {label || name}
       </Text>
-      <Group align="center" w="clamp(100px, 100%, 400px)">
-        <Stack gap="sm" w="clamp(100px, 70%, 300px)">
+      <Group align="center" w="clamp(100px, 100%, 400px)" wrap="nowrap">
+        <Stack gap="sm" w="clamp(100px, 100%, 400px)">
           {children}
         </Stack>
         <ActionIconsGroup fieldName={name} />

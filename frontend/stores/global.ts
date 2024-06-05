@@ -1,3 +1,4 @@
+import { fetcher } from '@/lib/fetcher';
 import { CorrectWord, Game, GlobalStore } from '@/types/globalStore';
 import toast from 'react-hot-toast';
 import { create } from 'zustand';
@@ -5,9 +6,16 @@ import { create } from 'zustand';
 export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get: () => any) => ({
   confetti: false,
   dropConfetti: () => {
+    if (get().confetti) return;
     set({ confetti: true });
     setTimeout(() => set({ confetti: false }), 8000);
   },
+
+  session: null,
+  setSession: (session: any) => set({ session }),
+
+  profanesAllowed: false,
+  setProfanesAllowed: (profanesAllowed: boolean) => set({ profanesAllowed }),
 
   invite: null,
   setInvite: (invite: null | string) => set({ invite }),
@@ -67,6 +75,9 @@ export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get
   },
 
   checkWord: async () => {
+    if (!get().currentGame) return toast.error('No game selected!', { id: 'no-game' });
+    else toast.dismiss('no-game');
+
     toast.dismiss();
     if (get().input.length <= 0) return toast.error('Enter a word dummy!')
     const word = get().input.join('');
@@ -82,26 +93,28 @@ export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get
 
     if (get().foundWords.includes(word.toLowerCase())) return toast.error('Already found!');
 
-    const { correctWords } = get().games.find((game: Game) => game.id === get().currentGame);
+    const foundGame = get().games.find((game: Game) => game.id === get().currentGame);
 
-    const foundWord = correctWords.find((correctWord: CorrectWord) => correctWord.word === word);
+    const foundWord: CorrectWord = foundGame?.correctWords?.find((correctWord: CorrectWord) => correctWord.word === word.toLowerCase());
+
+    if (foundWord?.isProfane && !get().profanesAllowed) return toast.error('Profane words are disallowed');
 
     if (foundWord) {
       let message = '';
       const score = foundWord.points;
 
-      if ((new Set(foundWord.word)).size === get().keys?.length) message = 'Pangram!';
+      if (foundWord.isPanagram) message = 'Pangram!';
       else if (score === 1) message = 'Good!';
       else if (score === 5 || score === 6) message = 'Great!';
       else if (score >= 7) message = 'Awesome!';
 
       toast.success(`${message} +${foundWord.points}pts`);
 
-      const newScore = get().points + foundWord.points;
+      const res = await fetcher('POST')('api/word/submit', { gameId: get().currentGame, word, points: foundWord.points });
 
       set({
-        foundWords: [...get().foundWords, word],
-        points: newScore,
+        foundWords: res.wordList,
+        points: res.newScore,
       });
 
       if (get().points >= get().ranksPoints[0].points)
@@ -109,21 +122,5 @@ export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get
     } else {
       toast.error('Word is incorrect');
     }
-
-    // const id = toast.loading('Checking...');
-    // const response = await fetcher('POST')('api/word/check', { gameId: get().currentGame, word, profanesAllowed: true });
-
-    // if (response?.error) return toast.error(response.error, { id });
-    // else if (response?.message) {
-    //   toast.success(`${response.message} +${response.wordScore}pts`, { id });
-
-    //   if (response.newScore >= get().ranksPoints[0].points)
-    //     get().dropConfetti();
-
-    //   set({
-    //     foundWords: response.wordList,
-    //     points: response.newScore,
-    //   });
-    // }
   },
 }));

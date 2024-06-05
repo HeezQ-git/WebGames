@@ -1,3 +1,4 @@
+import { useGlobalStore } from '@/stores/global';
 import { useSettingsStore } from '@/stores/settings';
 import { EditableElement } from '@/types/settingsStore';
 import { ActionIcon, Tooltip } from '@mantine/core';
@@ -5,15 +6,16 @@ import React from 'react';
 import { MdOutlineClose, MdOutlineEdit, MdOutlineSave } from 'react-icons/md';
 
 const ActionIconsGroup = ({ fieldName }: { fieldName: string }) => {
-  const { editingElement, setEditingElement, sessionStatus, form } =
-    useSettingsStore();
+  const { editingElement, setEditingElement, form } = useSettingsStore();
+
+  const { session } = useGlobalStore();
 
   return (
     <ActionIcon.Group>
       {editingElement !== fieldName && (
         <Tooltip label="Edit">
           <ActionIcon
-            disabled={sessionStatus !== 'authenticated'}
+            disabled={session?.status !== 'authenticated'}
             color="brightBlue.4"
             size="md"
             onClick={() => setEditingElement(fieldName as EditableElement)}

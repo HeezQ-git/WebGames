@@ -10,4 +10,7 @@ export const useModalStore = create<ModalStore>((set: (o: object) => void) => ({
 
   isSettingsModalOpen: false,
   setIsSettingsModalOpen: (isSettingsModalOpen: boolean) => set({ isSettingsModalOpen }),
+
+  isDangerModalOpen: false,
+  setIsDangerModalOpen: (isDangerModalOpen: boolean) => set({ isDangerModalOpen }),
 }));

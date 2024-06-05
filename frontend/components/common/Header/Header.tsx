@@ -16,13 +16,13 @@ import {
   MdOutlineLogout,
   MdOutlineSettings,
 } from 'react-icons/md';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useModalStore } from '@/stores/modal';
 import { useRouter } from 'next/navigation';
+import { useGlobalStore } from '@/stores/global';
 
 const Header = () => {
-  const { status, data } = useSession();
+  const { session } = useGlobalStore();
 
   const { colorScheme, setColorScheme } = useMantineColorScheme();
   const { setIsSettingsModalOpen } = useModalStore();
@@ -62,7 +62,7 @@ const Header = () => {
             >
               Settings
             </Menu.Item>
-            {data?.user?.name === 'Guest' ? (
+            {session?.data?.user?.name === 'Guest' ? (
               <Tooltip
                 label="Sign in to save progress"
                 position="left"
@@ -72,7 +72,7 @@ const Header = () => {
               >
                 <Link href="/signin">
                   <Menu.Item
-                    disabled={status === 'loading'}
+                    disabled={session?.status === 'loading'}
                     leftSection={<MdOutlineLogin size={16} />}
                   >
                     Sign in
@@ -81,7 +81,7 @@ const Header = () => {
               </Tooltip>
             ) : (
               <Menu.Item
-                disabled={status === 'loading'}
+                disabled={session?.status === 'loading'}
                 color="red"
                 leftSection={<MdOutlineLogout size={16} />}
                 onClick={() => router.push('/signout')}

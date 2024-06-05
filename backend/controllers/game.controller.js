@@ -9,18 +9,13 @@ const otherLetters = ['D', 'G', 'B', 'C', 'M', 'P', 'F', 'H', 'V', 'W', 'Y', 'K'
 
 const createGame = async (req, res) => {
   let { letters, centerLetter, profanesAllowed } = req.body;
-  const playerId = req.playerId;
+  const playerCookie = req.playerCookie;
 
-  if (!playerId) {
-    return res.status(400).json({ error: 'Player ID not found' });
-  }
-
-  // Ensure player exists
-  const playerExists = await prisma.player.findUnique({
-    where: { id: playerId },
+  const player = await prisma.player.findUnique({
+    where: { cookie: playerCookie },
   });
 
-  if (!playerExists) {
+  if (!player) {
     return res.status(400).json({ error: 'Player not found' });
   }
 
@@ -52,32 +47,40 @@ const createGame = async (req, res) => {
   try {
     const pattern = generateLettersRegexPattern(letters, centerLetter);
 
+    profanesAllowed =
+      typeof profanesAllowed === 'string'
+        ? profanesAllowed === 'true'
+        : profanesAllowed;
+
     let words = await prisma.word.findMany({
       where: {
         word: {
           contains: centerLetter,
           mode: 'insensitive',
         },
-        isProfane:
-          typeof profanesAllowed === 'string'
-            ? profanesAllowed === 'true'
-            : profanesAllowed,
       },
-      select: { word: true, isProfane },
+      select: { word: true, isProfane: true },
     });
 
     words = words
-      .filter((word) => word.word.match(pattern))
+      .filter((word) => {
+        if (!profanesAllowed)
+          return !word.isProfane && word.word.match(pattern);
+        else return word.word.match(pattern);
+      })
       .map((word) => {
         const { word: wordText, isProfane } = word;
         const { wordScore, isPangram } = getWordScore(wordText, letters);
-        return { word: wordText, points: wordScore, isPangram, isProfane };
+        return {
+          word: wordText,
+          points: wordScore,
+          isPangram,
+          isProfane: isProfane || false,
+        };
         // check if mapping is correct!!! THEN DO IT FOR FRONTEND (ALSO CHECK DB)
       });
 
     const maximumScore = words.reduce((score, word) => score + word.points, 0);
-
-    console.log(words);
 
     const game = await prisma.game.create({
       data: {
@@ -92,7 +95,7 @@ const createGame = async (req, res) => {
     // Create the PlayerGame relationship
     await prisma.playerGame.create({
       data: {
-        playerId,
+        playerId: player.id,
         gameId: game.id,
       },
     });
@@ -100,16 +103,12 @@ const createGame = async (req, res) => {
     res.status(200).json(game);
   } catch (error) {
     console.error(`Error in game.controller createGame:`, error);
-    res.status(500).send({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
 const getAllGames = async (req, res) => {
   const playerId = req.playerId;
-
-  if (!playerId) {
-    return res.status(400).json({ error: 'Player ID not found' });
-  }
 
   try {
     const games = await prisma.game.findMany({
@@ -124,6 +123,7 @@ const getAllGames = async (req, res) => {
         centerLetter: true,
         enteredWords: true,
         maximumScore: true,
+        correctWords: true,
         score: true,
       },
     });
@@ -131,7 +131,7 @@ const getAllGames = async (req, res) => {
     res.status(200).json(games);
   } catch (error) {
     console.error(`Error in game.controller getAllGames:`, error.message);
-    res.status(500).send({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -139,12 +139,8 @@ const deleteGame = async (req, res) => {
   const { gameId } = req.params;
   const playerId = req.playerId;
 
-  if (!playerId) {
-    return res.status(400).json({ error: 'Player ID not found' });
-  }
-
   if (!gameId) {
-    return res.status(400).send({ message: 'Game ID is required' });
+    return res.status(400).json({ message: 'Game ID is required' });
   }
 
   try {
@@ -160,7 +156,7 @@ const deleteGame = async (req, res) => {
     if (!game) {
       return res
         .status(403)
-        .send({ message: 'Player is not part of this game' });
+        .json({ message: 'Player is not part of this game' });
     }
 
     await prisma.playerGame.deleteMany({
@@ -187,7 +183,7 @@ const deleteGame = async (req, res) => {
     res.status(200).json('Game deleted successfully');
   } catch (error) {
     console.error(`Error in game.controller deleteGame:`, error.message);
-    res.status(500).send({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -200,7 +196,7 @@ const getAllGameWords = async (req, res) => {
   }
 
   if (!gameId) {
-    return res.status(400).send({ message: 'Game ID is required' });
+    return res.status(400).json({ message: 'Game ID is required' });
   }
 
   try {
@@ -218,7 +214,7 @@ const getAllGameWords = async (req, res) => {
     });
 
     if (!game) {
-      return res.status(400).send({ message: 'Game not found' });
+      return res.status(400).json({ message: 'Game not found' });
     }
 
     const pattern = generateLettersRegexPattern(
@@ -241,7 +237,7 @@ const getAllGameWords = async (req, res) => {
     res.status(200).json(words);
   } catch (error) {
     console.error(`Error in game.controller getAllGameWords:`, error.message);
-    res.status(500).send({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -294,7 +290,7 @@ const addPlayerToGame = async (req, res) => {
     res.status(200).json({ message: 'Player added to game successfully' });
   } catch (error) {
     console.error(`Error in game.controller addPlayerToGame:`, error);
-    res.status(500).send({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -302,7 +298,7 @@ const getGame = async (req, res) => {
   const { gameId } = req.params;
 
   if (!gameId || gameId === 'undefined' || gameId === 'null') {
-    return res.status(400).send({ message: 'Game ID is required' });
+    return res.status(400).json({ message: 'Game ID is required' });
   }
 
   try {
@@ -311,13 +307,13 @@ const getGame = async (req, res) => {
     });
 
     if (!game) {
-      return res.status(400).send({ message: 'Game not found' });
+      return res.status(400).json({ message: 'Game not found' });
     }
 
     res.status(200).json(game);
   } catch (error) {
     console.error(`Error in game.controller getGame:`, error.message);
-    res.status(500).send({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 

@@ -21,6 +21,12 @@
     transform: scale(0.925);
   }
 
+  &:focus,
+  &:focus-within {
+    outline: none;
+    border: none;
+  }
+
   .keyLetter {
     font-size: 1.5rem;
     font-weight: bold;

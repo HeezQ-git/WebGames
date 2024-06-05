@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Dot from '../../Dot/Dot';
 import { Game } from '@/types/globalStore';
 import styles from './GamesModal.module.css';
@@ -6,13 +6,19 @@ import { useGlobalStore } from '@/stores/global';
 import { useModalStore } from '@/stores/modal';
 import { fetcher } from '@/lib/fetcher';
 import toast from 'react-hot-toast';
-import { ActionIcon, Button, Tooltip, Modal } from '@mantine/core';
+import { ActionIcon, Button, Tooltip, Modal, Group } from '@mantine/core';
 import InlineKeys from '../../InlineKeys/InlineKeys';
-import { MdOutlineAdd, MdOutlineDelete, MdOutlineShare } from 'react-icons/md';
+import {
+  MdOutlineAdd,
+  MdOutlineDelete,
+  MdOutlineRefresh,
+  MdOutlineShare,
+} from 'react-icons/md';
 
 const GamesModal = () => {
   const { isGamesModalOpen, setIsGamesModalOpen, setIsNewGameModalOpen } =
     useModalStore();
+  const [lastUpdatedGames, setLastUpdatedGames] = useState<Date | null>(null);
 
   const {
     isLoading,
@@ -24,22 +30,71 @@ const GamesModal = () => {
     setCurrentGame,
   } = useGlobalStore();
 
+  const refreshTimeLimit = 5000;
+
   const deleteGame = async (id: string) => {
-    await toast.promise(fetcher('DELETE')(`api/game/${id}`), {
-      loading: 'Deleting the game...',
-      success: 'Game deleted!',
-      error: 'Failed to delete the game',
-    });
+    await toast.promise(
+      fetcher('DELETE')(`api/game/${id}`),
+      {
+        loading: 'Deleting the game...',
+        success: 'Game deleted!',
+        error: 'Failed to delete the game',
+      },
+      { position: 'top-right' }
+    );
 
     if (currentGame === id) resetGame();
     await fetchGames?.();
   };
 
+  useEffect(() => {
+    if (!lastUpdatedGames) return;
+
+    const timer = setTimeout(() => {
+      setLastUpdatedGames(null);
+    }, refreshTimeLimit);
+
+    return () => clearTimeout(timer);
+  }, [lastUpdatedGames]);
+
   return (
     <Modal
       opened={isGamesModalOpen}
       onClose={() => setIsGamesModalOpen(false)}
-      title={<span className="modalTitle">Your games</span>}
+      title={
+        <Group justify="center" gap="sm">
+          <Tooltip
+            label={
+              !lastUpdatedGames
+                ? 'Refresh games list'
+                : 'Please wait a few seconds'
+            }
+          >
+            <ActionIcon
+              variant="outline"
+              color="gray"
+              disabled={!!lastUpdatedGames}
+              onClick={() => {
+                if (lastUpdatedGames) return;
+
+                toast.promise(
+                  fetchGames?.() as any,
+                  {
+                    loading: 'Refreshing games...',
+                    success: 'Games refreshed!',
+                    error: 'Failed to refresh games',
+                  },
+                  { position: 'top-right' }
+                );
+                setLastUpdatedGames(new Date());
+              }}
+            >
+              <MdOutlineRefresh size={18} />
+            </ActionIcon>
+          </Tooltip>
+          <span className="modalTitle">Your games</span>
+        </Group>
+      }
       className={styles.modalContent}
       size="lg"
       centered
@@ -137,7 +192,7 @@ const GamesModal = () => {
       <div className={styles.newGame}>
         <Button
           fullWidth
-          color="gold"
+          color="gold.7"
           leftSection={<MdOutlineAdd size={22} />}
           onClick={() => {
             setIsGamesModalOpen(false);
