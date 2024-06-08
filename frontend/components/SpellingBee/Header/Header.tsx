@@ -7,7 +7,7 @@ import GamesModal from './GamesModal/GamesModal';
 import { useModalStore } from '@/stores/modal';
 import NewGameModal from './NewGameModal/NewGameModal';
 import { useGlobalStore } from '@/stores/global';
-import { UnstyledButton } from '@mantine/core';
+import { Group, UnstyledButton } from '@mantine/core';
 
 const Header = () => {
   const { fetchGames } = useGlobalStore();
@@ -16,12 +16,20 @@ const Header = () => {
   return (
     <div className={styles.header}>
       <Image src={Logo} alt="Spelling Bee" className={styles.logo} />
-      <UnstyledButton
-        className={styles.button}
-        onClick={() => setIsGamesModalOpen(true)}
-      >
-        Your games
-      </UnstyledButton>
+      <Group gap="lg">
+        <UnstyledButton
+          className={styles.button}
+          onClick={() => setIsGamesModalOpen(true)}
+        >
+          Hints
+        </UnstyledButton>
+        <UnstyledButton
+          className={styles.button}
+          onClick={() => setIsGamesModalOpen(true)}
+        >
+          Your games
+        </UnstyledButton>
+      </Group>
       <GamesModal />
       <NewGameModal />
     </div>

@@ -1,4 +1,7 @@
 export interface ModalStore {
+  openModal: string | null;
+  setOpenModal: (openModal: string) => void;
+
   isGamesModalOpen: boolean;
   setIsGamesModalOpen: (isGamesModalOpen: boolean) => void;
 
