@@ -21,6 +21,7 @@ const Dot = ({
         achieved && styles.achieved,
         disableMargin && styles.disableMargin
       )}
+      tabIndex={-1}
     >
       {active ? score : null}
     </div>

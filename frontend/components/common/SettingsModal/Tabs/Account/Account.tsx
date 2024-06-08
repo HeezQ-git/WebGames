@@ -20,7 +20,7 @@ import { useGlobalStore } from '@/stores/global';
 
 const Account = () => {
   const { session } = useGlobalStore();
-  const { setIsSettingsModalOpen } = useModalStore();
+  const { setOpenModal } = useModalStore();
   const {
     editingElement,
     setEditingElement,
@@ -73,7 +73,7 @@ const Account = () => {
             await session?.update({ name: data.username });
             form.setFieldValue('username', data.username);
             setEditingElement(null);
-            setIsSettingsModalOpen(false);
+            setOpenModal(null);
           } else {
             form.setFieldError('username', 'Something went wrong');
           }
@@ -103,7 +103,7 @@ const Account = () => {
 
         if (response.status === 200) {
           toast.success('Password changed successfully');
-          setIsSettingsModalOpen(false);
+          setOpenModal(null);
         } else {
           form.setFieldError('oldPassword', 'Invalid password');
         }

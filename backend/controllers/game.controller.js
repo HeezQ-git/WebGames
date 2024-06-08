@@ -77,7 +77,6 @@ const createGame = async (req, res) => {
           isPangram,
           isProfane: isProfane || false,
         };
-        // check if mapping is correct!!! THEN DO IT FOR FRONTEND (ALSO CHECK DB)
       });
 
     const maximumScore = words.reduce((score, word) => score + word.points, 0);

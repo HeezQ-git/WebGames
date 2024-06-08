@@ -4,14 +4,21 @@ import styles from './RankingModal.module.css';
 import clsx from 'clsx';
 import { Modal } from '@mantine/core';
 import { useGlobalStore } from '@/stores/global';
+import { Modals } from '@/types/modalStore';
 
-const RankingModal = ({ open, setOpen }: { open: boolean; setOpen: any }) => {
+const RankingModal = ({
+  open,
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: (open: Modals) => void;
+}) => {
   const { ranks, ranksPoints, currentRank, points } = useGlobalStore();
 
   return (
     <Modal
       opened={open}
-      onClose={() => setOpen(false)}
+      onClose={() => setOpen(null)}
       title={
         <div>
           <h3>Rankings</h3>

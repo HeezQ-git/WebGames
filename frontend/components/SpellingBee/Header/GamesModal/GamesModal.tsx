@@ -16,8 +16,7 @@ import {
 } from 'react-icons/md';
 
 const GamesModal = () => {
-  const { isGamesModalOpen, setIsGamesModalOpen, setIsNewGameModalOpen } =
-    useModalStore();
+  const { openModal, setOpenModal } = useModalStore();
   const [lastUpdatedGames, setLastUpdatedGames] = useState<Date | null>(null);
 
   const {
@@ -59,8 +58,8 @@ const GamesModal = () => {
 
   return (
     <Modal
-      opened={isGamesModalOpen}
-      onClose={() => setIsGamesModalOpen(false)}
+      opened={openModal === 'GAMES'}
+      onClose={() => setOpenModal(null)}
       title={
         <Group justify="center" gap="sm">
           <Tooltip
@@ -121,7 +120,7 @@ const GamesModal = () => {
                     className={styles.game}
                     onClick={() => {
                       setCurrentGame(game.id);
-                      setIsGamesModalOpen(false);
+                      setOpenModal(null);
                     }}
                   >
                     <div className={styles.top}>
@@ -138,10 +137,11 @@ const GamesModal = () => {
                         >
                           <ActionIcon
                             color="#298de0"
+                            variant="light"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigator.clipboard.writeText(
-                                `${window.location.origin}/spelling-bee/invite/${game.id}`
+                                `${window.location.origin}/spelling-bee?invite=${game.id}`
                               );
                               toast.success(
                                 'Game invite link copied to clipboard!',
@@ -163,6 +163,7 @@ const GamesModal = () => {
                         >
                           <ActionIcon
                             color="red.6"
+                            variant="light"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteGame(game.id);
@@ -194,10 +195,7 @@ const GamesModal = () => {
           fullWidth
           color="gold.7"
           leftSection={<MdOutlineAdd size={22} />}
-          onClick={() => {
-            setIsGamesModalOpen(false);
-            setIsNewGameModalOpen(true);
-          }}
+          onClick={() => setOpenModal('NEW_GAME')}
         >
           New Game
         </Button>

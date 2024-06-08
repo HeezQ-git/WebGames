@@ -13,7 +13,7 @@ const page = () => {
     await signOut();
     await fetchGames?.();
     router.back();
-    window.location.reload();
+    // window.location.reload();
   };
 
   useEffect(() => {

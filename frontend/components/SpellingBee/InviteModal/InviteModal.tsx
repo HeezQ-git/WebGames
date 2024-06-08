@@ -8,6 +8,14 @@ import { Button, Modal } from '@mantine/core';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
+const InfoRow = (label: string, value: string | number) => (
+  <div className={styles.infoRow}>
+    <span className={styles.label}>{label}</span>
+    <div className={styles.line} />
+    <span className={styles.value}>{value}</span>
+  </div>
+);
+
 const InviteModal = () => {
   const [notified, setNotified] = useState(false);
   const { games, currentGame, fetchGames, setCurrentGame } = useGlobalStore();
@@ -19,8 +27,7 @@ const InviteModal = () => {
 
   const { data: inviteGame, isLoading } = useFetcherSWR<Game>(
     'GET',
-    invite ? `api/game/byId/${invite}` : undefined,
-    { surpressError: true }
+    invite ? `api/game/byId/${invite}` : undefined
   );
 
   useEffect(() => {
@@ -67,23 +74,9 @@ const InviteModal = () => {
           centerLetter={inviteGame?.centerLetter}
         />
         <div className={styles.infoContainer}>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Words guessed</span>
-            <div className={styles.line} />
-            <span className={styles.value}>
-              {inviteGame?.enteredWords?.length}
-            </span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Current score</span>
-            <div className={styles.line} />
-            <span className={styles.value}>{inviteGame?.score}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Maximum score</span>
-            <div className={styles.line} />
-            <span className={styles.value}>{inviteGame?.maximumScore}</span>
-          </div>
+          {InfoRow('Words guessed', inviteGame?.enteredWords?.length)}
+          {InfoRow('Current score', inviteGame?.score)}
+          {InfoRow('Maximum score', inviteGame?.maximumScore)}
         </div>
         <div className={styles.buttons}>
           <Button

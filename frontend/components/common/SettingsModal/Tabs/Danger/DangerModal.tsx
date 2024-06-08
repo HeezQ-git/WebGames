@@ -19,7 +19,7 @@ import toast from 'react-hot-toast';
 import { MdOutlineDelete } from 'react-icons/md';
 
 const DangerModal = () => {
-  const { isDangerModalOpen, setIsDangerModalOpen } = useModalStore();
+  const { openModal, setOpenModal } = useModalStore();
   const { dangerAction } = useSettingsStore();
   const { fetchGames } = useGlobalStore();
   const router = useRouter();
@@ -60,14 +60,14 @@ const DangerModal = () => {
       }
     }
 
-    setIsDangerModalOpen(false);
+    setOpenModal('SETTINGS');
   };
 
   return (
     <Modal
-      opened={isDangerModalOpen}
+      opened={openModal === 'DANGER'}
       onClose={() => {
-        setIsDangerModalOpen(false);
+        setOpenModal('SETTINGS');
         form.reset();
       }}
       title={
@@ -109,7 +109,7 @@ const DangerModal = () => {
           />
         </Stack>
         <Group mt="xl" justify="flex-end">
-          <Button variant="outline" onClick={() => setIsDangerModalOpen(false)}>
+          <Button variant="outline" onClick={() => setOpenModal('SETTINGS')}>
             Cancel
           </Button>
           <Button

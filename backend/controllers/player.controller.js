@@ -72,8 +72,15 @@ const changePassword = async (req, res) => {
 };
 
 const updatePlayer = async (req, res) => {
-  const { profanesAllowed } = req.body;
+  const { profanesAllowed, wordListSortBy } = req.body;
   const playerCookie = req.playerCookie;
+
+  console.log(
+    'profanesAllowed',
+    profanesAllowed,
+    'wordListSortBy',
+    wordListSortBy
+  );
 
   try {
     const player = await prisma.player.findUnique({
@@ -82,16 +89,31 @@ const updatePlayer = async (req, res) => {
       },
     });
 
-    if (!player) {
-      return res.status(400).json({ message: 'Player not found' });
+    const playerSettings = await prisma.playerSettings.findUnique({
+      where: {
+        playerId: player.id,
+      },
+    });
+
+    if (!playerSettings) {
+      await prisma.playerSettings.create({
+        data: {
+          playerId: player.id,
+          profanesAllowed: profanesAllowed || false,
+          wordListSortBy: wordListSortBy || 'ALPHABETICAL',
+        },
+      });
     }
 
-    await prisma.player.update({
+    await prisma.playerSettings.update({
       where: {
-        cookie: playerCookie,
+        playerId: player.id,
       },
       data: {
-        profanesAllowed,
+        profanesAllowed:
+          profanesAllowed || playerSettings?.profanesAllowed || false,
+        wordListSortBy:
+          wordListSortBy || playerSettings?.wordListSortBy || 'ALPHABETICAL',
       },
     });
 
@@ -103,7 +125,8 @@ const updatePlayer = async (req, res) => {
 };
 
 const deletePlayerProgress = async (req, res) => {
-  const playerCookie = req.playerCookie;
+  let playerCookie = req.playerCookie;
+  if (req.oldCookie) playerCookie = req.oldCookie;
 
   try {
     const player = await prisma.player.findUnique({
@@ -113,7 +136,7 @@ const deletePlayerProgress = async (req, res) => {
     });
 
     if (!player) {
-      return res.status(400).json({ message: 'Player not found' });
+      return res.status(400);
     }
 
     const foundGames = await prisma.game.findMany({
@@ -175,19 +198,25 @@ const deletePlayerAccount = async (req, res) => {
 
     await deletePlayerProgress(req, res);
 
+    await prisma.playerSettings.delete({
+      where: {
+        playerId: player.id,
+      },
+    });
+
     await prisma.player.delete({
       where: {
         id: player.id,
       },
     });
 
-    return res.status(200).json({ message: 'Player deleted successfully' });
+    return res.status(200);
   } catch (error) {
     console.log(
       `Error in player.controller deletePlayerAccount`,
       error.message
     );
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500);
   }
 };
 

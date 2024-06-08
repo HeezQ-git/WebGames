@@ -27,6 +27,8 @@ const Keys = ({
         styles.keysContainer,
         disablePointers && styles.disablePointers
       )}
+      aria-label="Keys"
+      tabIndex={-1}
     >
       <div className={styles.keyRow}>
         <Key letter={getNextKey()} />

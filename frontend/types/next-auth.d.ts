@@ -5,7 +5,10 @@ declare module "next-auth" {
     user: {
       pid: string;
       name: string;
-      profanesAllowed: boolean;
+      settings: {
+        profanesAllowed: boolean;
+        wordListSortBy: "ALPHABETICAL" | 'LATEST_FIRST' | 'OLDEST_FIRST';
+      }
     } & DefaultSession["user"];
   }
 }

@@ -110,12 +110,18 @@ export const useGlobalStore = create<GlobalStore>((set: (o: object) => void, get
 
       toast.success(`${message} +${foundWord.points}pts`);
 
-      const res = await fetcher('POST')('api/word/submit', { gameId: get().currentGame, word, points: foundWord.points });
-
       set({
-        foundWords: res.wordList,
-        points: res.newScore,
+        points: get().points + foundWord.points,
+        foundWords: [...get().foundWords, word.toLowerCase()],
       });
+
+      const res = await fetcher('POST', { wholeResponse: true })('api/word/submit', { gameId: get().currentGame, word, points: foundWord.points });
+
+      if (res?.status !== 200) {
+        toast.error('Failed to submit word');
+        set({ points: get().points - foundWord.points, foundWords: get().foundWords.filter((foundWord: string) => foundWord !== word.toLowerCase()) });
+        return;
+      }
 
       if (get().points >= get().ranksPoints[0].points)
         get().dropConfetti();

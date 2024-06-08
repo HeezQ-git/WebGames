@@ -2,26 +2,26 @@
 import { useGlobalStore } from '@/stores/global';
 import { useModalStore } from '@/stores/modal';
 import { useCallback, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const allowedKeys = [' ', 'Backspace', 'Delete', 'Enter'];
 
 const InputManager = () => {
-  const { isNewGameModalOpen, isGamesModalOpen, isSettingsModalOpen } =
-    useModalStore();
+  const { openModal } = useModalStore();
 
-  const { addLetter, removeLetter, resetInput, checkWord, shuffleKeys } =
+  const { addLetter, removeLetter, resetInput, input, checkWord, shuffleKeys } =
     useGlobalStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // if player is focused on body
-      if (
-        document.activeElement !== document.body &&
-        document.activeElement?.getAttribute('data-testid') !== 'key'
-      )
+      if (input.length > 16) {
+        resetInput();
+        toast.error('Too long!', {
+          id: 'too-long',
+        });
         return;
-
-      if (isNewGameModalOpen || isGamesModalOpen || isSettingsModalOpen) return;
+      }
+      if (openModal) return;
       if (!/^[a-z]+$/i.test(e.key) && !allowedKeys.includes(e.key)) return;
 
       if (e.key === 'Backspace' || e.key === 'Delete') removeLetter();
@@ -36,11 +36,10 @@ const InputManager = () => {
       addLetter,
       removeLetter,
       resetInput,
-      isGamesModalOpen,
-      isNewGameModalOpen,
-      isSettingsModalOpen,
+      openModal,
       checkWord,
       shuffleKeys,
+      input,
     ]
   );
 

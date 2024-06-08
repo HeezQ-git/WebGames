@@ -7,8 +7,9 @@ const getWordScore = (word, letters) => {
 
   // pangram = length + 7pts
   const wordSet = new Set(word);
+  const lettersSet = new Set(letters);
 
-  const isPangram = wordSet.size === letters.size;
+  const isPangram = wordSet.size === lettersSet.size;
 
   if (isPangram) wordScore += 7;
 

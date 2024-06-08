@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './NewGameModal.module.css';
 import { useModalStore } from '@/stores/modal';
 import { Button, Checkbox, PinInput, Modal, Stack, Text } from '@mantine/core';
@@ -10,14 +10,15 @@ import { useGlobalStore } from '@/stores/global';
 import { MdOutlineCreate } from 'react-icons/md';
 
 const NewGameModal = () => {
-  const { isNewGameModalOpen, setIsNewGameModalOpen, setIsGamesModalOpen } =
-    useModalStore();
-  const { fetchGames, session } = useGlobalStore();
+  const [loading, setLoading] = useState(false);
+
+  const { openModal, setOpenModal } = useModalStore();
+  const { setCurrentGame, fetchGames, session } = useGlobalStore();
 
   const form = useForm({
     initialValues: {
       randomLetters: true,
-      profanesAllowed: session?.data?.user?.profanesAllowed ?? false,
+      profanesAllowed: session?.data?.user?.settings?.profanesAllowed ?? false,
       centerLetter: '',
       letters: '',
     },
@@ -48,8 +49,10 @@ const NewGameModal = () => {
     form.validate();
 
     if (form.isValid()) {
-      await toast.promise(
-        fetcher('POST')(
+      setLoading(true);
+
+      const response = await toast.promise(
+        fetcher('POST', { wholeResponse: true })(
           'api/game/create',
           values.randomLetters
             ? { profanesAllowed: values.profanesAllowed }
@@ -66,29 +69,36 @@ const NewGameModal = () => {
           loading: 'Creating a new game...',
           success: 'Game created!',
           error: 'Failed to create a new game',
+        },
+        {
+          position: 'top-right',
+          success: {
+            icon: '🎉',
+          },
         }
       );
 
       await fetchGames?.();
       form.reset();
-      setIsNewGameModalOpen(false);
-      setIsGamesModalOpen(true);
+      setOpenModal(null);
+      if (response?.status === 200) setCurrentGame(response?.data?.id);
+
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     form.setFieldValue(
       'profanesAllowed',
-      session?.data?.user?.profanesAllowed ?? false
+      session?.data?.user?.settings?.profanesAllowed ?? false
     );
-  }, [session?.data?.user?.profanesAllowed]);
+  }, [session?.data?.user?.settings?.profanesAllowed]);
 
   return (
     <Modal
-      opened={isNewGameModalOpen}
+      opened={openModal === 'NEW_GAME'}
       onClose={() => {
-        setIsNewGameModalOpen(false);
-        setIsGamesModalOpen(true);
+        setOpenModal('GAMES');
         form.reset();
       }}
       title={<span className="modalTitle">Create a new game</span>}
@@ -108,6 +118,7 @@ const NewGameModal = () => {
           styles={{ description: { marginTop: 0 } }}
           key={form.key('randomLetters')}
           {...form.getInputProps('randomLetters')}
+          disabled={loading}
         />
 
         {!values.randomLetters && (
@@ -117,7 +128,7 @@ const NewGameModal = () => {
               <PinInput
                 placeholder="X"
                 length={1}
-                disabled={form.values.randomLetters}
+                disabled={form.values.randomLetters || loading}
                 key={form.key('centerLetter')}
                 {...form.getInputProps('centerLetter')}
                 value={values.centerLetter.toUpperCase()}
@@ -130,7 +141,7 @@ const NewGameModal = () => {
                 placeholder="X"
                 title="Other letters"
                 length={6}
-                disabled={form.values.randomLetters}
+                disabled={form.values.randomLetters || loading}
                 key={form.key('letters')}
                 {...form.getInputProps('letters')}
                 value={values.letters.toUpperCase()}
@@ -147,6 +158,7 @@ const NewGameModal = () => {
           key={form.key('profanesAllowed')}
           {...form.getInputProps('profanesAllowed')}
           checked={form.values.profanesAllowed}
+          disabled={loading}
         />
 
         {(form.errors.centerLetter || form.errors.letters) && (
@@ -159,6 +171,7 @@ const NewGameModal = () => {
           leftSection={<MdOutlineCreate size={16} />}
           color="gold.7"
           type="submit"
+          loading={loading}
         >
           Create
         </Button>

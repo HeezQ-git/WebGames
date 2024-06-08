@@ -1,6 +1,5 @@
 'use client';
-
-import useGameManager from '@/hooks/useGameManager';
+import { useGameManager } from '@/hooks/useGameManager';
 
 const GameManager = () => {
   useGameManager();

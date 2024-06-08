@@ -43,7 +43,7 @@ export const fetcher = (method: Method, rest: FetcherOptions | void) => async (u
     url,
     data,
     cancelToken: source.token,
-    timeout: timeout || 6000,
+    timeout: timeout || 30000,
   });
 
   return wholeResponse ? response : response?.data;
