@@ -23,14 +23,14 @@ model Word {
 }
 
 model Player {
-  id              String       @id @default(auto()) @map("_id") @db.ObjectId
-  name            String       @unique
-  password        String?
-  cookie          String?      @unique
-  profanesAllowed Boolean      @default(false)
-  games           PlayerGame[]
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  name           String          @unique
+  password       String?
+  cookie         String?         @unique
+  games          PlayerGame[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  PlayerSettings PlayerSettings?
 }
 
 model Game {
@@ -57,4 +57,17 @@ model PlayerGame {
 
   @@unique([playerId, gameId])
   @@index([gameId])
+}
+
+model PlayerSettings {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  playerId        String   @db.ObjectId
+  profanesAllowed Boolean  @default(false)
+  wordListSortBy  String   @default("ALPHABETICAL")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId])
 }

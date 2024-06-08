@@ -29,10 +29,11 @@
 
       .words {
         display: grid;
+        height: max-content;
         width: 100%;
         grid-template-columns: repeat(3, minmax(100px, 1fr));
         margin-top: 10px;
-        overflow-y: auto;
+        overflow-y: visible;
 
         &::-webkit-scrollbar {
           width: 4px;

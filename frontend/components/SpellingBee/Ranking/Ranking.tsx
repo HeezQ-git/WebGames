@@ -1,16 +1,18 @@
 'use client';
-import React, { lazy, useState } from 'react';
+import React, { lazy } from 'react';
 import styles from './Ranking.module.css';
 import Dot from '../Dot/Dot';
 import { useGlobalStore } from '@/stores/global';
 import { UnstyledButton } from '@mantine/core';
+import { useModalStore } from '@/stores/modal';
 const RankingModal = lazy(
   () => import('@/components/SpellingBee/RankingModal/RankingModal')
 );
 
 const Ranking = () => {
-  const [open, setOpen] = useState(false);
   const { ranks, ranksPoints, currentRank, points } = useGlobalStore();
+  const { openModal, setOpenModal } = useModalStore();
+
   const currentRankName = ranks.find(
     (rank) => rank.index === currentRank
   )?.name;
@@ -23,7 +25,10 @@ const Ranking = () => {
 
   return (
     <>
-      <UnstyledButton className={styles.ranking} onClick={() => setOpen(true)}>
+      <UnstyledButton
+        className={styles.ranking}
+        onClick={() => setOpenModal('RANKING')}
+      >
         <div className={styles.current}>
           <span className={styles.title}>{currentRankName}</span>
           {currentRankName !== 'Genius' ? (
@@ -43,7 +48,7 @@ const Ranking = () => {
           ))}
         </div>
       </UnstyledButton>
-      <RankingModal open={open} setOpen={setOpen} />
+      <RankingModal open={openModal === 'RANKING'} setOpen={setOpenModal} />
     </>
   );
 };

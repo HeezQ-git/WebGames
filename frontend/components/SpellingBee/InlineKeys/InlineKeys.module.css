@@ -2,7 +2,7 @@
   display: flex;
   gap: 2px;
 
-  & > div {
+  & button {
     width: 34px;
     height: 39px;
     pointer-events: none;
@@ -11,7 +11,7 @@
       width: 28px;
       height: 33px;
 
-      & > span {
+      & span {
         font-size: 16px !important;
       }
     }

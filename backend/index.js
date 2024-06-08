@@ -31,7 +31,7 @@ app.use(async (req, res, next) => {
 
   let playerCookie = req.headers?.authorization;
 
-  if (!playerCookie) {
+  if (!playerCookie || !playerCookie.length) {
     return res
       .status(403)
       .json({ message: 'Player ID not found. Please sign in to continue' });

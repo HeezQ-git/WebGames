@@ -25,7 +25,7 @@ const Header = () => {
   const { session } = useGlobalStore();
 
   const { colorScheme, setColorScheme } = useMantineColorScheme();
-  const { setIsSettingsModalOpen } = useModalStore();
+  const { setOpenModal } = useModalStore();
 
   const router = useRouter();
 
@@ -58,7 +58,7 @@ const Header = () => {
             </Menu.Item>
             <Menu.Item
               leftSection={<MdOutlineSettings size={16} />}
-              onClick={() => setIsSettingsModalOpen(true)}
+              onClick={() => setOpenModal('SETTINGS')}
             >
               Settings
             </Menu.Item>

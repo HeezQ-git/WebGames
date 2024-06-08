@@ -61,16 +61,30 @@ const signIn = async (req, res) => {
         },
       });
 
+      const settings = await prisma.playerSettings.create({
+        data: {
+          playerId: player.id,
+          profanesAllowed: false,
+          wordListSortBy: 'ALPHABETICAL',
+        },
+      });
+
       return res.status(200).json({
         message: 'Player signed in as guest',
         playerCookie: playerId,
-        profanesAllowed: player.profanesAllowed,
+        settings,
       });
     }
 
     const player = await prisma.player.findUnique({
       where: {
         name: username,
+      },
+    });
+
+    const settings = await prisma.playerSettings.findUnique({
+      where: {
+        playerId: player?.id,
       },
     });
 
@@ -100,11 +114,11 @@ const signIn = async (req, res) => {
     return res.status(200).json({
       message: 'Player signed in successfully',
       playerCookie: player.cookie,
-      profanesAllowed: player.profanesAllowed,
+      settings,
     });
   } catch (error) {
     console.log(`Error in auth.controller signIn`, error.message);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500);
   }
 };
 

@@ -7,7 +7,7 @@ import { useModalStore } from '@/stores/modal';
 
 const Danger = () => {
   const { setDangerAction } = useSettingsStore();
-  const { setIsDangerModalOpen } = useModalStore();
+  const { setOpenModal } = useModalStore();
 
   return (
     <Stack>
@@ -27,7 +27,7 @@ const Danger = () => {
           w="max-content"
           onClick={() => {
             setDangerAction('reset');
-            setIsDangerModalOpen(true);
+            setOpenModal('DANGER');
           }}
         >
           Reset progress
@@ -50,7 +50,7 @@ const Danger = () => {
           w="max-content"
           onClick={() => {
             setDangerAction('delete');
-            setIsDangerModalOpen(true);
+            setOpenModal('DANGER');
           }}
         >
           Delete account

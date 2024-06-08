@@ -40,7 +40,7 @@ const data = [
 ];
 
 const SettingsModal = () => {
-  const { isSettingsModalOpen, setIsSettingsModalOpen } = useModalStore();
+  const { openModal, setOpenModal } = useModalStore();
   const [active, setActive] = useState(0);
   const { editingElement, checkingUsername, form, setEditingElement } =
     useSettingsStore();
@@ -52,10 +52,11 @@ const SettingsModal = () => {
   return useMemo(
     () => (
       <Modal
-        opened={isSettingsModalOpen}
+        opened={openModal === 'SETTINGS' || openModal === 'DANGER'}
         onClose={() => {
-          setIsSettingsModalOpen(false);
+          setOpenModal(null);
           setEditingElement(null);
+          setActive(0);
           form.reset();
         }}
         title={<span className="modalTitle">Settings</span>}
@@ -99,7 +100,7 @@ const SettingsModal = () => {
       </Modal>
     ),
     [
-      isSettingsModalOpen,
+      openModal,
       active,
       session?.status,
       session?.data,

@@ -27,7 +27,7 @@ type FormData = {
 const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { session, fetchGames } = useGlobalStore();
+  const { session } = useGlobalStore();
 
   const form = useForm<FormData>({
     initialValues: {
@@ -47,7 +47,6 @@ const SignIn = () => {
     if (res?.status === 200) {
       toast.success('Successfully signed in!');
       await session?.update({ name: data.username });
-      await fetchGames?.();
       router.back();
     } else {
       form.setErrors({
