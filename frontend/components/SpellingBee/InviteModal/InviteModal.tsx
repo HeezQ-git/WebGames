@@ -27,8 +27,7 @@ const InviteModal = () => {
 
   const { data: inviteGame, isLoading } = useFetcherSWR<Game>(
     'GET',
-    invite ? `api/game/byId/${invite}` : undefined,
-    { surpressError: true }
+    invite ? `api/game/byId/${invite}` : undefined
   );
 
   useEffect(() => {

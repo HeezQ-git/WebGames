@@ -124,8 +124,9 @@ const updatePlayer = async (req, res) => {
   }
 };
 
-const deletePlayerProgress = async (req, res, providedPlayerCookie) => {
-  const playerCookie = req.playerCookie || providedPlayerCookie;
+const deletePlayerProgress = async (req, res) => {
+  let playerCookie = req.playerCookie;
+  if (req.oldCookie) playerCookie = req.oldCookie;
 
   try {
     const player = await prisma.player.findUnique({
@@ -196,6 +197,12 @@ const deletePlayerAccount = async (req, res) => {
     }
 
     await deletePlayerProgress(req, res, playerCookie);
+
+    await prisma.playerSettings.delete({
+      where: {
+        playerId: player.id,
+      },
+    });
 
     await prisma.playerSettings.delete({
       where: {
