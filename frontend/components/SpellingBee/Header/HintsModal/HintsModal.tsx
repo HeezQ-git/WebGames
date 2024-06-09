@@ -1,66 +1,60 @@
-import { useGlobalStore } from '@/stores/global';
-import { useModalStore } from '@/stores/modal';
-import {
-  Accordion,
-  Code,
-  Divider,
-  Group,
-  Modal,
-  Stack,
-  Switch,
-  Text,
-  Tooltip,
-} from '@mantine/core';
-import React, { useState } from 'react';
+'use client';
 
-const HintsModal = () => {
-  const [skipFound, setSkipFound] = useState(false);
+import React from 'react';
+import { Accordion, Modal, Skeleton, Stack, Switch, Text } from '@mantine/core';
+import { useModalStore } from '@/stores/modalStore';
+import { useHintData } from './hooks/useHintData';
+import dynamic from 'next/dynamic';
 
+const GeneralHints = dynamic(() => import('./Hints/GeneralHints'), {
+  ssr: false,
+  loading: () => (
+    <Stack gap="sm">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <Skeleton key={index} height={30} />
+      ))}
+    </Stack>
+  ),
+});
+
+const LetterDistribution = dynamic(() => import('./Hints/LetterDistribution'), {
+  ssr: false,
+  loading: () => (
+    <Stack gap="sm">
+      {Array.from({ length: 7 }).map((_, index) => (
+        <Skeleton key={index} height={30} />
+      ))}
+    </Stack>
+  ),
+});
+
+const LetterTally = dynamic(() => import('./Hints/LetterTally'), {
+  ssr: false,
+  loading: () => (
+    <Stack gap="sm">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <Skeleton key={index} height={30} />
+      ))}
+    </Stack>
+  ),
+});
+
+const HintsModal: React.FC = () => {
   const { openModal, setOpenModal } = useModalStore();
-  const { games, currentGame, foundWords } = useGlobalStore();
-  const wordlist = games?.find((game) => game.id === currentGame)?.correctWords;
-
-  const getTally = (amountOfLetters: number) =>
-    wordlist
-      ?.filter((word) => {
-        if (skipFound && foundWords.includes(word?.word)) return false;
-        return true;
-      })
-      ?.reduce((acc, word) => {
-        const twoLetters = word?.word
-          ?.slice(0, amountOfLetters)
-          .toLocaleUpperCase();
-        acc[twoLetters] = (acc[twoLetters] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-  const letterDistribution = getTally(1);
-
-  const wordLengths =
-    wordlist
-      ?.map((word) => word?.word.length)
-      .reduce((acc, length) => {
-        acc[length] = (acc[length] || 0) + 1;
-        return acc;
-      }, {} as Record<number, number>) || {};
-
-  const wordsLeft = (wordlist?.length || 0) - foundWords.length;
-
-  const pangrams = wordlist?.filter((word) => word?.isPanagram);
-  const pangramsLeft = pangrams?.filter(
-    (word) => !foundWords.includes(word?.word)
-  );
-
-  const perfectPangrams = wordlist?.filter(
-    (word) => new Set(word?.word).size === 7
-  );
-  const perfectPangramsLeft = perfectPangrams?.filter(
-    (word) => !foundWords.includes(word?.word)
-  );
-
-  const bingo = !Object.values(letterDistribution).some(
-    (amount) => amount === 0
-  );
+  const {
+    skipFound,
+    setSkipFound,
+    wordsLeft,
+    wordlist,
+    pangrams,
+    pangramsLeft,
+    perfectPangrams,
+    perfectPangramsLeft,
+    bingo,
+    letterDistribution,
+    wordLengths,
+    getTally,
+  } = useHintData();
 
   return (
     <Modal
@@ -85,75 +79,31 @@ const HintsModal = () => {
         <Accordion.Item value="general">
           <Accordion.Control icon="📖">General</Accordion.Control>
           <Accordion.Panel>
-            <Stack gap="xs">
-              <Code fz="md">
-                {skipFound ? 'Words left' : 'Words total'}:{' '}
-                {skipFound
-                  ? `${wordsLeft} / ${wordlist?.length}`
-                  : wordlist?.length}
-              </Code>
-              <Code fz="md">
-                {skipFound ? 'Pangrams left' : 'Pangrams total'}:{' '}
-                {skipFound ? pangramsLeft?.length : pangrams?.length}
-              </Code>
-              <Code fz="md">
-                {skipFound ? 'Perfect pangrams left' : 'Perfect pangrams total'}
-                :{' '}
-                {skipFound
-                  ? perfectPangramsLeft?.length
-                  : perfectPangrams?.length}
-              </Code>
-
-              <Code fz="md">
-                <Tooltip
-                  label="A puzzle where solutions begin with every letter in the hive"
-                  openDelay={250}
-                >
-                  <Text component="span">Bingo</Text>
-                </Tooltip>
-                : {bingo ? 'yes' : 'no'}
-              </Code>
-            </Stack>
+            <GeneralHints
+              skipFound={skipFound}
+              wordsLeft={wordsLeft}
+              wordlistLength={wordlist?.length || 0}
+              pangramsLength={pangrams?.length || 0}
+              pangramsLeftLength={pangramsLeft?.length || 0}
+              perfectPangramsLength={perfectPangrams?.length || 0}
+              perfectPangramsLeftLength={perfectPangramsLeft?.length || 0}
+              bingo={bingo}
+            />
           </Accordion.Panel>
         </Accordion.Item>
         <Accordion.Item value="distribution">
           <Accordion.Control icon="🔤">Letter distribution</Accordion.Control>
           <Accordion.Panel>
-            <Divider label="Beginning of word" mb="sm" />
-            <Stack gap="xs">
-              {Object.entries(letterDistribution)
-                .sort(([, a], [, b]) => b - a)
-                .map(([letter, amount]) => (
-                  <Code key={letter} fz="md">
-                    {letter} x {amount}
-                  </Code>
-                ))}
-            </Stack>
-            <Divider label="Word lengths" mt="lg" mb="sm" />
-            <Stack gap="xs">
-              {Object.entries(wordLengths).map(([length, amount]) => (
-                <Code key={length} fz="md">
-                  <Tooltip label={`${length} letters`} openDelay={250}>
-                    <Text component="span">{length}L</Text>
-                  </Tooltip>{' '}
-                  x {amount}
-                </Code>
-              ))}
-            </Stack>
+            <LetterDistribution
+              letterDistribution={letterDistribution}
+              wordLengths={wordLengths}
+            />
           </Accordion.Panel>
         </Accordion.Item>
         <Accordion.Item value="tally">
           <Accordion.Control icon="📊">Letters tally</Accordion.Control>
           <Accordion.Panel>
-            <Group gap="xs">
-              {Object.entries(getTally(2))
-                .sort(([, a], [, b]) => b - a)
-                .map(([letters, amount]) => (
-                  <Code key={letters} fz="md">
-                    {letters} x {amount}
-                  </Code>
-                ))}
-            </Group>
+            <LetterTally letterTally={getTally(2)} />
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>

@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import styles from './SignUp.module.css';
 import {
+  Box,
   Button,
   Highlight,
+  LoadingOverlay,
   Paper,
   PasswordInput,
   Text,
@@ -17,7 +19,7 @@ import {
   MdOutlinePersonAdd,
 } from 'react-icons/md';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useDebouncedValue } from '@mantine/hooks';
 import { fetcher } from '@/lib/fetcher';
 import toast from 'react-hot-toast';
@@ -30,7 +32,7 @@ import {
 } from '@/lib/validation';
 import UsernameInput from '@/components/common/CustomInputs/UsernameInput';
 import CustomPasswordInput from '@/components/common/CustomInputs/PasswordInput';
-import { useGlobalStore } from '@/stores/global';
+import { useRedirect } from '@/hooks/useRedirect';
 
 type FormData = {
   username: string;
@@ -42,7 +44,9 @@ const SignIn = () => {
   const [submitting, setSubmitting] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const router = useRouter();
-  const { session } = useGlobalStore();
+  const { data, status, update } = useSession();
+
+  useRedirect(status, data?.user?.name || 'Guest');
 
   const form = useForm<FormData>({
     initialValues: {
@@ -95,7 +99,7 @@ const SignIn = () => {
         });
       } else {
         toast.success('Successfully signed up!');
-        await session?.update({ name: data.username });
+        await update({ name: data.username });
         router.back();
         router.back();
       }
@@ -123,8 +127,19 @@ const SignIn = () => {
   }, [debouncedUsername]);
 
   return (
-    <div className={styles.container}>
-      <Paper shadow="md" withBorder p="lg" radius={8} className={styles.paper}>
+    <Box className={styles.container}>
+      <Paper
+        pos="relative"
+        shadow="md"
+        withBorder
+        p="lg"
+        radius={8}
+        className={styles.paper}
+      >
+        <LoadingOverlay
+          visible={status === 'loading'}
+          loaderProps={{ type: 'bars' }}
+        />
         <form
           className={styles.form}
           onSubmit={(e) => {
@@ -145,7 +160,7 @@ const SignIn = () => {
               </ThemeIcon>
             </Tooltip>
           </Text>
-          <div className={styles.inputs}>
+          <Box className={styles.inputs}>
             <UsernameInput
               checkingUsername={checkingUsername}
               form={form}
@@ -160,8 +175,8 @@ const SignIn = () => {
               key={form.key('confirmPassword')}
               {...form.getInputProps('confirmPassword')}
             />
-          </div>
-          <div className={styles.signupText}>
+          </Box>
+          <Box className={styles.signupText}>
             <Text
               fz="sm"
               ta="center"
@@ -186,7 +201,7 @@ const SignIn = () => {
                 Sign in
               </Highlight>
             </Link>
-          </div>
+          </Box>
           <Button
             leftSection={<MdOutlinePersonAdd size={16} />}
             variant="gradient"
@@ -202,7 +217,7 @@ const SignIn = () => {
           </Button>
         </form>
       </Paper>
-    </div>
+    </Box>
   );
 };
 

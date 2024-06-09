@@ -82,6 +82,10 @@ const signIn = async (req, res) => {
       },
     });
 
+    if (!player) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
     const settings = await prisma.playerSettings.findUnique({
       where: {
         playerId: player?.id,
@@ -107,7 +111,7 @@ const signIn = async (req, res) => {
 
       if (foundPlayer) {
         req.oldCookie = oldCookie;
-        await deletePlayerAccount(req, res);
+        await deletePlayerAccount(req, res, true);
       }
     }
 

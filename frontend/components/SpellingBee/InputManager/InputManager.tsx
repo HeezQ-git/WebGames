@@ -1,16 +1,18 @@
 'use client';
-import { useGlobalStore } from '@/stores/global';
-import { useModalStore } from '@/stores/modal';
-import { useCallback, useEffect } from 'react';
+
+import { useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { useModalStore } from '@/stores/modalStore';
+import { useInputStore } from '@/stores/inputStore';
+import { useGameStore } from '@/stores/gameStore';
 
 const allowedKeys = [' ', 'Backspace', 'Delete', 'Enter'];
 
-const InputManager = () => {
+const InputManager: React.FC = () => {
   const { openModal } = useModalStore();
-
-  const { addLetter, removeLetter, resetInput, input, checkWord, shuffleKeys } =
-    useGlobalStore();
+  const { addLetter, removeLetter, resetInput, input, shuffleKeys } =
+    useInputStore();
+  const { checkWord } = useGameStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -45,7 +47,6 @@ const InputManager = () => {
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };

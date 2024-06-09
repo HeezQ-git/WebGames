@@ -14,11 +14,11 @@ import {
   MdOutlineEditNote,
   MdOutlinePerson,
 } from 'react-icons/md';
-import { useModalStore } from '@/stores/modal';
+import { useModalStore } from '@/stores/modalStore';
 import { useMediaQuery } from '@mantine/hooks';
-import { useSettingsStore } from '@/stores/settings';
+import { useSettingsStore } from '@/stores/settingsStore';
 import Tabs from './Tabs/Tabs';
-import { useGlobalStore } from '@/stores/global';
+import { useSessionStore } from '@/stores/sessionStore';
 
 const data = [
   {
@@ -47,7 +47,7 @@ const SettingsModal = () => {
 
   const isMobile = useMediaQuery('(max-width: 768px)');
 
-  const { session } = useGlobalStore();
+  const { session } = useSessionStore();
 
   return useMemo(
     () => (

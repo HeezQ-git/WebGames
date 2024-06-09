@@ -2,11 +2,13 @@
 import React from 'react';
 import styles from './Buttons.module.css';
 import Button from '../Button/Button';
-import { useGlobalStore } from '@/stores/global';
 import { FiRefreshCcw } from 'react-icons/fi';
+import { useInputStore } from '@/stores/inputStore';
+import { useGameStore } from '@/stores/gameStore';
 
 const Buttons = () => {
-  const { removeLetter, shuffleKeys, checkWord, resetInput } = useGlobalStore();
+  const { removeLetter, shuffleKeys, resetInput } = useInputStore();
+  const { checkWord } = useGameStore();
 
   return (
     <div className={styles.buttons}>

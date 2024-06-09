@@ -9,7 +9,7 @@ export const authOptions = (req: any, res: any) => ({
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',
-    maxAge: process.env.NODE_ENV === 'development' ? 24 * 60 * 60 : 30 * 60,
+    maxAge: 10 * 365 * 24 * 60 * 60,
   },
   providers: [
     CredentialsProvider({

@@ -1,25 +1,36 @@
-import { useGlobalStore } from '@/stores/global';
+'use client';
+
 import React, { useEffect, useState } from 'react';
-import InlineKeys from '../InlineKeys/InlineKeys';
-import { fetcher, useFetcherSWR } from '@/lib/fetcher';
-import { Game } from '@/types/globalStore';
-import styles from './InviteModal.module.css';
-import { Button, Modal } from '@mantine/core';
+import { Button, Modal, Text } from '@mantine/core';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { fetcher, useFetcherSWR } from '@/lib/fetcher';
+import InlineKeys from '../InlineKeys/InlineKeys';
+import { useGameStore, Game } from '@/stores/gameStore';
+import styles from './InviteModal.module.css';
 
-const InfoRow = (label: string, value: string | number) => (
+const InfoRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) => (
   <div className={styles.infoRow}>
-    <span className={styles.label}>{label}</span>
+    <Text component="span" className={styles.label}>
+      {label}
+    </Text>
     <div className={styles.line} />
-    <span className={styles.value}>{value}</span>
+    <Text component="span" className={styles.value}>
+      {value}
+    </Text>
   </div>
 );
 
-const InviteModal = () => {
+const InviteModal: React.FC = () => {
   const [notified, setNotified] = useState(false);
-  const { games, currentGame, fetchGames, setCurrentGame } = useGlobalStore();
   const [invite, setInvite] = useState<string | null>(null);
+  const { games, fetchGames, setCurrentGame } = useGameStore();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -57,11 +68,32 @@ const InviteModal = () => {
 
   if (!inviteGame) return null;
 
-  return !isLoading && currentGame !== foundInvite && inviteGame ? (
+  const handleDecline = () => {
+    setInvite(null);
+    router.push(`/spelling-bee`);
+  };
+
+  const handleAccept = async () => {
+    await fetcher('POST')(`api/game/add-player`, { gameId: invite });
+    setInvite(null);
+    await fetchGames?.();
+    setCurrentGame(invite!);
+    toast.success('You have successfully joined the game', {
+      icon: '🎉',
+      position: 'top-right',
+    });
+    router.push(`/spelling-bee`);
+  };
+
+  return (
     <Modal
       opened={!!invite}
       onClose={() => setInvite(null)}
-      title={<span className="modalTitle">Invitation to a game</span>}
+      title={
+        <Text component="span" className="modalTitle">
+          Invitation to a game
+        </Text>
+      }
       centered
       overlayProps={{
         backgroundOpacity: 0.3,
@@ -74,36 +106,19 @@ const InviteModal = () => {
           centerLetter={inviteGame?.centerLetter}
         />
         <div className={styles.infoContainer}>
-          {InfoRow('Words guessed', inviteGame?.enteredWords?.length)}
-          {InfoRow('Current score', inviteGame?.score)}
-          {InfoRow('Maximum score', inviteGame?.maximumScore)}
+          <InfoRow
+            label="Words guessed"
+            value={inviteGame?.enteredWords?.length}
+          />
+          <InfoRow label="Current score" value={inviteGame?.score} />
+          <InfoRow label="Maximum score" value={inviteGame?.maximumScore} />
         </div>
         <div className={styles.buttons}>
-          <Button
-            onClick={() => {
-              setInvite(null);
-              router.push(`/spelling-bee`);
-            }}
-            color="red"
-            variant="light"
-            fullWidth
-          >
+          <Button onClick={handleDecline} color="red" variant="light" fullWidth>
             Decline
           </Button>
           <Button
-            onClick={async () => {
-              await fetcher('POST')(`api/game/add-player`, {
-                gameId: invite,
-              });
-              setInvite(null);
-              await fetchGames?.();
-              setCurrentGame(invite!);
-              toast.success('You have successfully joined the game', {
-                icon: '🎉',
-                position: 'top-right',
-              });
-              router.push(`/spelling-bee`);
-            }}
+            onClick={handleAccept}
             color="green"
             variant="light"
             fullWidth
@@ -113,7 +128,7 @@ const InviteModal = () => {
         </div>
       </div>
     </Modal>
-  ) : null;
+  );
 };
 
 export default InviteModal;

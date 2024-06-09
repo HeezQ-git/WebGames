@@ -1,8 +1,9 @@
-import { signIn, useSession } from 'next-auth/react';
+import { useSessionStore } from '@/stores/sessionStore';
+import { signIn } from 'next-auth/react';
 import { useEffect } from 'react';
 
 const SessionManager = () => {
-  const { status } = useSession();
+  const { session } = useSessionStore();
 
   const handleSignIn = async () => {
     await signIn('credentials', {
@@ -13,8 +14,8 @@ const SessionManager = () => {
   };
 
   useEffect(() => {
-    if (status === 'unauthenticated') handleSignIn();
-  }, [status]);
+    if (session?.status === 'unauthenticated') handleSignIn();
+  }, [session?.status]);
   return null;
 };
 

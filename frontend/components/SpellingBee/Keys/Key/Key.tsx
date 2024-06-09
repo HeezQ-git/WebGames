@@ -1,8 +1,8 @@
 import React from 'react';
 import styles from './Key.module.css';
 import clsx from 'clsx';
-import { useGlobalStore } from '@/stores/global';
 import { UnstyledButton } from '@mantine/core';
+import { useInputStore } from '@/stores/inputStore';
 
 const Key = ({
   centerKey,
@@ -11,7 +11,7 @@ const Key = ({
   centerKey?: boolean;
   letter?: string;
 }) => {
-  const { addLetter } = useGlobalStore();
+  const { addLetter } = useInputStore();
 
   return (
     <UnstyledButton

@@ -1,0 +1,10 @@
+.word {
+  text-transform: uppercase;
+  padding: 2px;
+}
+
+.pangram {
+  & > mark {
+    padding-inline: 2px;
+  }
+}

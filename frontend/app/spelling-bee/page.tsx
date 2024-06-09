@@ -12,33 +12,36 @@ import Header from '@/components/SpellingBee/Header/Header';
 import GameManager from '@/components/SpellingBee/GameManager/GameManager';
 import Confetti from 'react-confetti';
 import { useViewportSize } from '@mantine/hooks';
-import { useGlobalStore } from '@/stores/global';
 import InviteModal from '@/components/SpellingBee/InviteModal/InviteModal';
 import Loading from '@/components/common/Loading/Loading';
+import { useGameStore } from '@/stores/gameStore';
+import { useConfettiStore } from '@/stores/confettiStore';
+import { Box, Container } from '@mantine/core';
 
 const SpellingBee = () => {
-  const { games, currentGame, confetti } = useGlobalStore();
+  const { games, currentGame } = useGameStore();
+  const { confetti } = useConfettiStore();
   const { height, width } = useViewportSize();
 
   return (
     <Suspense fallback={<Loading />}>
-      <div className={styles.container}>
+      <Container className={styles.container}>
         {games?.length !== 0 && currentGame !== '' ? (
-          <div className={styles.content}>
+          <Box className={styles.content}>
             <>
               <Header />
-              <div className={styles.line} />
-              <div className={styles.content}>
-                <section className={styles.top}>
+              <Box className={styles.line} />
+              <Box className={styles.content}>
+                <Box component="section" className={styles.top}>
                   <Ranking />
                   <WordList />
-                </section>
-                <section className={styles.bottom}>
+                </Box>
+                <Box component="section" className={styles.bottom}>
                   <Input />
                   <Keys />
                   <Buttons />
-                </section>
-              </div>
+                </Box>
+              </Box>
               <InviteModal />
               {confetti && (
                 <Confetti
@@ -50,13 +53,13 @@ const SpellingBee = () => {
                 />
               )}
             </>
-          </div>
+          </Box>
         ) : (
           <Loading />
         )}
         <InputManager />
         <GameManager />
-      </div>
+      </Container>
     </Suspense>
   );
 };

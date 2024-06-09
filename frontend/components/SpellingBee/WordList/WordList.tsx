@@ -1,71 +1,23 @@
-/* eslint-disable indent */
 'use client';
-import React, { useMemo, useState } from 'react';
-import styles from './WordList.module.css';
 
+import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import clsx from 'clsx';
-import { useGlobalStore } from '@/stores/global';
+import { Box, UnstyledButton } from '@mantine/core';
 import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
-import { Box, Highlight, Text, Tooltip, UnstyledButton } from '@mantine/core';
+import { useMappedWords } from './hooks/useMappedWords';
+import styles from './WordList.module.css';
+import { WordListContentProps, WordListHeaderProps } from './types';
+import { useGameStore } from '@/stores/gameStore';
 
-const WordList = () => {
+const WordItem = dynamic(() => import('./WordItem/WordItem'), {
+  ssr: false,
+});
+
+const WordList: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const { foundWords, keys, session } = useGlobalStore();
-
-  const mappedWords = useMemo(
-    () =>
-      foundWords
-        .map((word) => ({
-          text: word,
-          pangram: new Set(word.split('')).size === keys.length,
-        }))
-        .sort((a, b) => {
-          const sortBy =
-            session?.data?.user?.settings?.wordListSortBy || 'ALPHABETICAL';
-
-          switch (sortBy) {
-            case 'LATEST_FIRST':
-              return foundWords.indexOf(b.text) - foundWords.indexOf(a.text);
-            case 'OLDEST_FIRST':
-              return foundWords.indexOf(a.text) - foundWords.indexOf(b.text);
-            case 'ALPHABETICAL':
-            default:
-              return a.text.localeCompare(b.text);
-          }
-        }),
-    [foundWords, keys, session]
-  );
-
-  const wordsElement = useMemo(
-    () =>
-      mappedWords.map((word, index) =>
-        !word.pangram ? (
-          <Text key={index} className={styles.word} component="span">
-            {word.text}
-          </Text>
-        ) : (
-          <Tooltip
-            key={index}
-            label="Pangram!"
-            position="top"
-            openDelay={750}
-            withArrow
-          >
-            <Highlight
-              key={index}
-              className={clsx(styles.word, word.pangram && styles.pangram)}
-              highlight={word.pangram ? word.text : ' '}
-              color="gold"
-              component="span"
-            >
-              {word.text}
-            </Highlight>
-          </Tooltip>
-        )
-      ),
-    [mappedWords]
-  );
+  const { foundWords } = useGameStore();
+  const mappedWords = useMappedWords();
 
   return (
     <div className={styles.container}>
@@ -79,19 +31,11 @@ const WordList = () => {
         aria-expanded={isOpen}
       >
         <div className={styles.header}>
-          {!isOpen ? (
-            <Box className={styles.words}>
-              {foundWords.length === 0 ? (
-                <span className={styles.noWords}>No words found...</span>
-              ) : (
-                wordsElement
-              )}
-            </Box>
-          ) : (
-            <p className={styles.wordsFound}>
-              You have found {foundWords.length} words!
-            </p>
-          )}
+          <WordListHeader
+            isOpen={isOpen}
+            foundWords={foundWords}
+            mappedWords={mappedWords}
+          />
           <MdOutlineKeyboardArrowDown
             size={20}
             style={{
@@ -100,10 +44,37 @@ const WordList = () => {
             }}
           />
         </div>
-        {isOpen ? <div className={styles.words}>{wordsElement}</div> : null}
+        {isOpen && <WordListContent mappedWords={mappedWords} />}
       </UnstyledButton>
     </div>
   );
 };
+
+const WordListHeader: React.FC<WordListHeaderProps> = ({
+  isOpen,
+  foundWords,
+  mappedWords,
+}) =>
+  !isOpen ? (
+    <Box className={styles.words}>
+      {foundWords.length === 0 ? (
+        <span className={styles.noWords}>No words found...</span>
+      ) : (
+        mappedWords?.map((word, index) => <WordItem key={index} word={word} />)
+      )}
+    </Box>
+  ) : (
+    <p className={styles.wordsFound}>
+      You have found {foundWords.length} words!
+    </p>
+  );
+
+const WordListContent: React.FC<WordListContentProps> = ({ mappedWords }) => (
+  <div className={styles.words}>
+    {mappedWords.map((word, index) => (
+      <WordItem key={index} word={word} />
+    ))}
+  </div>
+);
 
 export default WordList;

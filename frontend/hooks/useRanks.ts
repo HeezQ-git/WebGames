@@ -1,8 +1,10 @@
 import { useMemo, useCallback } from 'react';
-import { useGlobalStore } from '@/stores/global';
+import { useRankStore } from '@/stores/rankStore';
+import { useGameStore } from '@/stores/gameStore';
 
 export const useRanks = () => {
-  const { ranks, maximumPoints } = useGlobalStore();
+  const { maximumPoints } = useGameStore();
+  const { ranks } = useRankStore();
 
   const ranksPoints = useMemo(() => {
     return ranks.map((rank) => ({

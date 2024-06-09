@@ -2,8 +2,8 @@
 import React from 'react';
 import styles from './Keys.module.css';
 import Key from './Key/Key';
-import { useGlobalStore } from '@/stores/global';
 import clsx from 'clsx';
+import { useInputStore } from '@/stores/inputStore';
 
 const Keys = ({
   overrideKeys,
@@ -12,7 +12,7 @@ const Keys = ({
   overrideKeys?: string[];
   disablePointers?: boolean;
 }) => {
-  const { keys, centerLetter } = useGlobalStore();
+  const { keys, centerLetter } = useInputStore();
   const copiedKeys = [...(overrideKeys || keys || [])];
 
   const getNextKey = (): string => {

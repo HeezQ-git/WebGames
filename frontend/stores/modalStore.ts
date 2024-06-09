@@ -1,5 +1,11 @@
-import { ModalStore, Modals } from '@/types/modalStore';
 import { create } from 'zustand';
+
+export type Modals = 'GAMES' | 'NEW_GAME' | 'RANKING' | 'SETTINGS' | 'DANGER' | 'HINTS' | null;
+
+interface ModalStore {
+  openModal: Modals;
+  setOpenModal: (openModal: Modals) => void;
+}
 
 export const useModalStore = create<ModalStore>((set: (o: object) => void) => ({
   openModal: null,

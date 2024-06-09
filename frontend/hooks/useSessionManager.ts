@@ -1,15 +1,16 @@
 import { useCallback, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
-import { useGlobalStore } from '@/stores/global';
+import { useSessionStore } from '@/stores/sessionStore';
 
 export const useSessionManager = () => {
   const session = useSession();
   const [pid, setPid] = useState<string | undefined>();
-  const { setSession, setProfanesAllowed } = useGlobalStore();
+  const { setSession, setProfanesAllowed } = useSessionStore();
 
   const handleSession = useCallback(() => {
     setSession(session);
+
     if (
       session?.status === 'loading' ||
       session?.status === 'unauthenticated'
@@ -21,7 +22,7 @@ export const useSessionManager = () => {
     }
     toast.dismiss('guest');
     setProfanesAllowed(session?.data?.user?.settings?.profanesAllowed || false);
-  }, [session, setSession, setProfanesAllowed]);
+  }, [session]);
 
   return { session, pid, setPid, handleSession };
 };

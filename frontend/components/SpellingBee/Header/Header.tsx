@@ -3,11 +3,21 @@ import React from 'react';
 import styles from './Header.module.css';
 import Image from 'next/image';
 import Logo from '@/assets/images/bee.png';
-import GamesModal from './GamesModal/GamesModal';
-import { useModalStore } from '@/stores/modal';
-import NewGameModal from './NewGameModal/NewGameModal';
+import { useModalStore } from '@/stores/modalStore';
 import { Group, UnstyledButton } from '@mantine/core';
-import HintsModal from './HintsModal/HintsModal';
+import dynamic from 'next/dynamic';
+
+const GamesModal = dynamic(() => import('./GamesModal/GamesModal'), {
+  ssr: false,
+});
+
+const NewGameModal = dynamic(() => import('./NewGameModal/NewGameModal'), {
+  ssr: false,
+});
+
+const HintsModal = dynamic(() => import('./HintsModal/HintsModal'), {
+  ssr: false,
+});
 
 const Header = () => {
   const { setOpenModal } = useModalStore();

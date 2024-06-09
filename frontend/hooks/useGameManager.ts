@@ -1,29 +1,19 @@
 import { useEffect, useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useGlobalStore } from '@/stores/global';
-import { Game } from '@/types/globalStore';
+import { useGlobalStore } from '@/stores/globalStore';
+import { useGameStore, Game } from '@/stores/gameStore';
+import { useRankStore } from '@/stores/rankStore';
 import { fetcher, useFetcherSWR } from '@/lib/fetcher';
 import { useSessionManager } from './useSessionManager';
 import { useRanks } from './useRanks';
 
 export const useGameManager = () => {
   const [retryCount, setRetryCount] = useState(0);
-  const {
-    isLoading: globalIsLoading,
-    setIsLoading,
-    points,
-    currentGame,
-    fetchGames,
-    setFetchGames,
-    setGames,
-    setCurrentGame,
-  } = useGlobalStore();
+  const { isLoading: globalIsLoading, setIsLoading } = useGlobalStore();
+  const { points, currentGame, fetchGames, setFetchGames, setGames, setCurrentGame } = useGameStore();
+  const { setRanksPoints, setCurrentRank } = useRankStore();
 
-  const {
-    data: games,
-    isLoading,
-    mutate,
-  } = useFetcherSWR<Game[]>('GET', 'api/game/all', undefined, {
+  const { data: games, isLoading, mutate } = useFetcherSWR<Game[]>('GET', 'api/game/all', undefined, {
     swrOptions: {
       revalidateOnReconnect: false,
       revalidateIfStale: false,
@@ -35,7 +25,7 @@ export const useGameManager = () => {
   const { session, pid, setPid, handleSession } = useSessionManager();
   const { ranksPoints, getCurrentRank } = useRanks();
 
-  const getLastPlayedGame = useCallback(() => {
+  const getLastPlayedGame = useCallback(async () => {
     if (games?.length) {
       const lastPlayed = localStorage.getItem('lastPlayed');
 
@@ -50,9 +40,11 @@ export const useGameManager = () => {
         }
       } else if (!currentGame || !games.find((game) => game.id === currentGame)) {
         setCurrentGame(games[0].id, games);
+      } else {
+        setCurrentGame(currentGame, games);
       }
     }
-  }, [currentGame, games, setCurrentGame]);
+  }, [currentGame, games, setCurrentGame, setIsLoading, mutate]);
 
   const createNewGame = useCallback(async () => {
     const toastId = toast.loading('Creating a new game...');
@@ -76,16 +68,15 @@ export const useGameManager = () => {
       toast.error('Failed to create a new game', {
         id: toastId,
       });
+      setIsLoading(false);
     }
 
     setIsLoading(false);
   }, [mutate, retryCount, setCurrentGame, setIsLoading]);
 
   const manageGames = useCallback(async () => {
-    if (session.status === 'loading') {
-      await mutate();
-      return;
-    }
+    setGames(games || []);
+    await getLastPlayedGame();
 
     if (!games?.length && !isLoading && !globalIsLoading && session.status === 'authenticated') {
       await createNewGame();
@@ -94,9 +85,6 @@ export const useGameManager = () => {
     if (!fetchGames) {
       setFetchGames(mutate);
     }
-
-    getLastPlayedGame();
-    setGames(games || []);
   }, [
     session.status,
     games,
@@ -106,9 +94,27 @@ export const useGameManager = () => {
     mutate,
     createNewGame,
     getLastPlayedGame,
-    setFetchGames,
-    setGames,
   ]);
+
+  // when user logs in, get their games and set the last played game
+  useEffect(() => {
+    (async () => {
+      if (
+        session?.status === 'authenticated' &&
+        (pid !== session?.data?.user?.pid ||
+          !pid) && !isLoading
+      ) {
+        setPid(session?.data?.user?.pid);
+        await mutate();
+        getLastPlayedGame();
+      }
+    })();
+  }, [session?.status, session?.data, pid, mutate, getLastPlayedGame, isLoading]);
+
+  useEffect(() => {
+    setRanksPoints(ranksPoints);
+    setCurrentRank(getCurrentRank(points));
+  }, [points, ranksPoints, getCurrentRank, setRanksPoints, setCurrentRank]);
 
   useEffect(() => {
     manageGames();
@@ -117,23 +123,4 @@ export const useGameManager = () => {
   useEffect(() => {
     handleSession();
   }, [handleSession]);
-
-  useEffect(() => {
-    if (
-      (session?.status === 'authenticated' &&
-        pid !== session?.data?.user?.pid) ||
-      !pid
-    ) {
-      setPid(session?.data?.user?.pid);
-      mutate();
-      getLastPlayedGame();
-    }
-  }, [session?.status, session?.data, pid, mutate, getLastPlayedGame]);
-
-  useEffect(() => {
-    useGlobalStore.setState({
-      currentRank: getCurrentRank(points),
-      ranksPoints,
-    });
-  }, [points, ranksPoints, getCurrentRank]);
 };

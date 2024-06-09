@@ -73,17 +73,6 @@
       width: 95%;
       max-width: 95%;
 
-      .word {
-        text-transform: uppercase;
-        padding: 2px;
-      }
-
-      .pangram {
-        & > mark {
-          padding-inline: 2px;
-        }
-      }
-
       .noWords {
         opacity: 0.6;
         user-select: none;

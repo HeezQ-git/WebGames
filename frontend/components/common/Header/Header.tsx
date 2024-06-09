@@ -17,12 +17,12 @@ import {
   MdOutlineSettings,
 } from 'react-icons/md';
 import Link from 'next/link';
-import { useModalStore } from '@/stores/modal';
+import { useModalStore } from '@/stores/modalStore';
 import { useRouter } from 'next/navigation';
-import { useGlobalStore } from '@/stores/global';
+import { useSessionStore } from '@/stores/sessionStore';
 
 const Header = () => {
-  const { session } = useGlobalStore();
+  const { session } = useSessionStore();
 
   const { colorScheme, setColorScheme } = useMantineColorScheme();
   const { setOpenModal } = useModalStore();

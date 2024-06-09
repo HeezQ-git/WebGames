@@ -2,8 +2,8 @@ import { Button, Divider, Stack, Text } from '@mantine/core';
 import React from 'react';
 import { MdOutlineDelete, MdOutlineRefresh } from 'react-icons/md';
 import DangerModal from './DangerModal';
-import { useSettingsStore } from '@/stores/settings';
-import { useModalStore } from '@/stores/modal';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useModalStore } from '@/stores/modalStore';
 
 const Danger = () => {
   const { setDangerAction } = useSettingsStore();

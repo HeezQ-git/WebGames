@@ -1,60 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import Dot from '../../Dot/Dot';
-import { Game } from '@/types/globalStore';
+'use client';
+
+import React from 'react';
+import { Modal, Group, Tooltip, ActionIcon, Button, Text } from '@mantine/core';
+import { useModalStore } from '@/stores/modalStore';
+import { useGameStore } from '@/stores/gameStore';
+import { useGameActions } from './hooks/useGameActions';
+import GameItem from './GameItem';
+import { MdOutlineAdd, MdOutlineRefresh } from 'react-icons/md';
 import styles from './GamesModal.module.css';
-import { useGlobalStore } from '@/stores/global';
-import { useModalStore } from '@/stores/modal';
-import { fetcher } from '@/lib/fetcher';
-import toast from 'react-hot-toast';
-import { ActionIcon, Button, Tooltip, Modal, Group } from '@mantine/core';
-import InlineKeys from '../../InlineKeys/InlineKeys';
-import {
-  MdOutlineAdd,
-  MdOutlineDelete,
-  MdOutlineRefresh,
-  MdOutlineShare,
-} from 'react-icons/md';
+import { useRankStore } from '@/stores/rankStore';
+import { useGlobalStore } from '@/stores/globalStore';
 
-const GamesModal = () => {
+const GamesModal: React.FC = () => {
   const { openModal, setOpenModal } = useModalStore();
-  const [lastUpdatedGames, setLastUpdatedGames] = useState<Date | null>(null);
-
-  const {
-    isLoading,
-    fetchGames,
-    games,
-    ranks,
-    currentGame,
-    resetGame,
-    setCurrentGame,
-  } = useGlobalStore();
-
-  const refreshTimeLimit = 5000;
-
-  const deleteGame = async (id: string) => {
-    await toast.promise(
-      fetcher('DELETE')(`api/game/${id}`),
-      {
-        loading: 'Deleting the game...',
-        success: 'Game deleted!',
-        error: 'Failed to delete the game',
-      },
-      { position: 'top-right' }
-    );
-
-    if (currentGame === id) resetGame();
-    await fetchGames?.();
-  };
-
-  useEffect(() => {
-    if (!lastUpdatedGames) return;
-
-    const timer = setTimeout(() => {
-      setLastUpdatedGames(null);
-    }, refreshTimeLimit);
-
-    return () => clearTimeout(timer);
-  }, [lastUpdatedGames]);
+  const { isLoading } = useGlobalStore();
+  const { games, setCurrentGame } = useGameStore();
+  const { ranks } = useRankStore();
+  const { lastUpdatedGames, deleteGame, refreshGames } = useGameActions();
 
   return (
     <Modal
@@ -73,25 +35,14 @@ const GamesModal = () => {
               variant="outline"
               color="gray"
               disabled={!!lastUpdatedGames}
-              onClick={() => {
-                if (lastUpdatedGames) return;
-
-                toast.promise(
-                  fetchGames?.() as any,
-                  {
-                    loading: 'Refreshing games...',
-                    success: 'Games refreshed!',
-                    error: 'Failed to refresh games',
-                  },
-                  { position: 'top-right' }
-                );
-                setLastUpdatedGames(new Date());
-              }}
+              onClick={refreshGames}
             >
               <MdOutlineRefresh size={18} />
             </ActionIcon>
           </Tooltip>
-          <span className="modalTitle">Your games</span>
+          <Text component="span" className="modalTitle">
+            Your games
+          </Text>
         </Group>
       }
       className={styles.modalContent}
@@ -104,82 +55,24 @@ const GamesModal = () => {
     >
       {!isLoading ? (
         <>
-          {games!?.length ? <div className={styles.line} /> : null}
+          {games?.length ? <div className={styles.line} /> : null}
           <div className={styles.games}>
-            {games!?.length ? (
-              games!?.map((game: Game) => {
+            {games?.length ? (
+              games.map((game) => {
                 const percentage = (game.score / game.maximumScore) * 100;
-
                 const currentRankName = ranks.find(
                   (rank) => percentage >= rank.percentage
                 )?.name;
 
                 return (
-                  <div
+                  <GameItem
                     key={game.id}
-                    className={styles.game}
-                    onClick={() => {
-                      setCurrentGame(game.id);
-                      setOpenModal(null);
-                    }}
-                  >
-                    <div className={styles.top}>
-                      <InlineKeys
-                        letters={game.letters}
-                        centerLetter={game.centerLetter}
-                      />
-                      <div className={styles.actionButtons}>
-                        <Tooltip
-                          label="Share game"
-                          position="bottom"
-                          withArrow
-                          openDelay={500}
-                        >
-                          <ActionIcon
-                            color="#298de0"
-                            variant="light"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigator.clipboard.writeText(
-                                `${window.location.origin}/spelling-bee?invite=${game.id}`
-                              );
-                              toast.success(
-                                'Game invite link copied to clipboard!',
-                                {
-                                  icon: '📋',
-                                  position: 'top-right',
-                                }
-                              );
-                            }}
-                          >
-                            <MdOutlineShare size={18} />
-                          </ActionIcon>
-                        </Tooltip>
-                        <Tooltip
-                          label="Delete game"
-                          position="bottom"
-                          withArrow
-                          openDelay={500}
-                        >
-                          <ActionIcon
-                            color="red.6"
-                            variant="light"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteGame(game.id);
-                            }}
-                          >
-                            <MdOutlineDelete size={18} />
-                          </ActionIcon>
-                        </Tooltip>
-                      </div>
-                    </div>
-                    <div className={styles.bottom}>
-                      <span className={styles.name}>{currentRankName}</span>
-                      <Dot disableMargin achieved active score={game.score} />
-                    </div>
-                    <div className={styles.line} />
-                  </div>
+                    game={game}
+                    currentRankName={currentRankName}
+                    deleteGame={deleteGame}
+                    setCurrentGame={setCurrentGame}
+                    setOpenModal={setOpenModal}
+                  />
                 );
               })
             ) : (

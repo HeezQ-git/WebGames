@@ -1,19 +1,26 @@
 'use client';
-import React from 'react';
-import styles from './RankingModal.module.css';
-import clsx from 'clsx';
-import { Modal } from '@mantine/core';
-import { useGlobalStore } from '@/stores/global';
-import { Modals } from '@/types/modalStore';
 
-const RankingModal = ({
-  open,
-  setOpen,
-}: {
-  open: boolean;
-  setOpen: (open: Modals) => void;
-}) => {
-  const { ranks, ranksPoints, currentRank, points } = useGlobalStore();
+import React, { Suspense } from 'react';
+import dynamic from 'next/dynamic';
+import { Modal, Text, Skeleton } from '@mantine/core';
+import { useGameStore } from '@/stores/gameStore';
+import { useRankStore } from '@/stores/rankStore';
+import styles from './RankingModal.module.css';
+import { RankingModalProps } from './types';
+
+const RankItem = dynamic(() => import('./components/RankItem'), {
+  ssr: false,
+  loading: () => <Skeleton height={20} mb="sm" />,
+});
+
+const CurrentRankItem = dynamic(() => import('./components/CurrentRankItem'), {
+  ssr: false,
+  loading: () => <Skeleton height={20} mb="sm" />,
+});
+
+const RankingModal: React.FC<RankingModalProps> = ({ open, setOpen }) => {
+  const { points } = useGameStore();
+  const { ranks, ranksPoints, currentRank } = useRankStore();
 
   return (
     <Modal
@@ -21,10 +28,10 @@ const RankingModal = ({
       onClose={() => setOpen(null)}
       title={
         <div>
-          <h3>Rankings</h3>
-          <span className={styles.subtitle}>
+          <Text component="h3">Rankings</Text>
+          <Text component="span" className={styles.subtitle}>
             Ranks are based on a percentage of possible points in a puzzle.
-          </span>
+          </Text>
         </div>
       }
       size="lg"
@@ -36,57 +43,41 @@ const RankingModal = ({
     >
       <div className={styles.modalContent}>
         <div className={styles.columnInfo}>
-          <span>Rank</span>
-          <span>Minimum score</span>
+          <Text component="span">Rank</Text>
+          <Text component="span">Minimum score</Text>
         </div>
         <div className={styles.ranks}>
-          {ranks.map((rank, index) => {
-            const currentRankPoints =
-              ranksPoints.find((r) => r.index === rank.index)?.points || 0;
+          <Suspense fallback={<Skeleton height={8} radius="xl" />}>
+            {ranks.map((rank, index) => {
+              const currentRankPoints =
+                ranksPoints.find((r) => r.index === rank.index)?.points || 0;
 
-            const nextRankPoints =
-              ranksPoints.find((r) => r.index === currentRank + 1)?.points || 0;
-            const geniusPoints =
-              ranksPoints.find((r) => r.index === ranks.length - 1)?.points ||
-              0;
+              const nextRankPoints =
+                ranksPoints.find((r) => r.index === currentRank + 1)?.points ||
+                0;
+              const geniusPoints =
+                ranksPoints.find((r) => r.index === ranks.length - 1)?.points ||
+                0;
 
-            return rank.index === currentRank ? (
-              <div key={index} className={styles.current}>
-                <div className={styles.leftContainer}>
-                  <div className={styles.currentPoints}>{points}</div>
-                  <div>
-                    <div className={styles.title}>{rank.name}</div>
-                    {points >= geniusPoints ? (
-                      <div className={styles.subtitle}>
-                        You are a Genius! Congratulations!
-                      </div>
-                    ) : (
-                      <div className={styles.subtitle}>
-                        {nextRankPoints - points} points to next rank,{' '}
-                        {geniusPoints - points} to Genius
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.points}>{currentRankPoints}</div>
-              </div>
-            ) : (
-              <div
-                key={index}
-                className={clsx(
-                  styles.rank,
-                  points >= currentRankPoints && styles.achieved
-                )}
-              >
-                <div className={styles.bullet} />
-                <div className={styles.rankContent}>
-                  <div className={styles.name}>{rank.name}</div>
-                  <div className={styles.line} />
-                  <div className={styles.points}>{currentRankPoints}</div>
-                </div>
-              </div>
-            );
-          })}
+              return rank.index === currentRank ? (
+                <CurrentRankItem
+                  key={index}
+                  rank={rank}
+                  points={points}
+                  nextRankPoints={nextRankPoints}
+                  geniusPoints={geniusPoints}
+                  currentRankPoints={currentRankPoints}
+                />
+              ) : (
+                <RankItem
+                  key={index}
+                  rank={rank}
+                  points={points}
+                  currentRankPoints={currentRankPoints}
+                />
+              );
+            })}
+          </Suspense>
         </div>
       </div>
     </Modal>

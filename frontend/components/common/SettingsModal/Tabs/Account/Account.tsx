@@ -1,52 +1,35 @@
-import { PasswordInput, Stack } from '@mantine/core';
-import React, { useEffect } from 'react';
-import EditableField from '../../subcomponents/EditableField';
-import UsernameInput from '@/components/common/CustomInputs/UsernameInput';
+'use client';
+
+import React from 'react';
+import { Stack, PasswordInput } from '@mantine/core';
 import { MdOutlineLock } from 'react-icons/md';
+import { useMediaQuery } from '@mantine/hooks';
+import EditableField from '../../components/EditableField';
+import UsernameInput from '@/components/common/CustomInputs/UsernameInput';
+import { useAccountForm } from '../hooks/useAccountForm';
+import { useModalStore } from '@/stores/modalStore';
 import { fetcher } from '@/lib/fetcher';
+import toast from 'react-hot-toast';
 import {
   checkUsername,
   validateConfirmPassword,
   validatePassword,
   validateUsername,
 } from '@/lib/validation';
-import { FormValues } from '@/types/settingsStore';
-import { useSettingsStore } from '@/stores/settings';
-import { useModalStore } from '@/stores/modal';
-import toast from 'react-hot-toast';
-import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
-import { useForm } from '@mantine/form';
-import { useGlobalStore } from '@/stores/global';
+import { useSessionStore } from '@/stores/sessionStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 const Account = () => {
-  const { session } = useGlobalStore();
   const { setOpenModal } = useModalStore();
-  const {
-    editingElement,
-    setEditingElement,
-    checkingUsername,
-    setCheckingUsername,
-    setForm,
-  } = useSettingsStore();
+  const { form, editingElement, checkingUsername, setEditingElement } =
+    useAccountForm();
+  const { setCheckingUsername } = useSettingsStore();
 
-  const form = useForm<FormValues>({
-    initialValues: {
-      username: session?.data?.user?.name || '',
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    },
-    validate: {
-      newPassword:
-        editingElement === 'password' ? validatePassword : () => null,
-    },
-    validateInputOnChange: true,
-  });
+  const { session } = useSessionStore();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [debouncedUsername] = useDebouncedValue(form.values.username, 400);
 
-  const handleSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: any) => {
     if (
       editingElement === 'username' &&
       data.username !== session?.data?.user?.name
@@ -63,9 +46,7 @@ const Account = () => {
         } else {
           const response = await fetcher('PATCH', { wholeResponse: true })(
             'api/player/change-username',
-            {
-              username: data.username,
-            }
+            { username: data.username }
           );
 
           if (response.status === 200) {
@@ -95,10 +76,7 @@ const Account = () => {
       } else {
         const response = await fetcher('PATCH', { wholeResponse: true })(
           'api/player/change-password',
-          {
-            oldPassword: data.oldPassword,
-            newPassword: data.newPassword,
-          }
+          { oldPassword: data.oldPassword, newPassword: data.newPassword }
         );
 
         if (response.status === 200) {
@@ -110,32 +88,6 @@ const Account = () => {
       }
     }
   };
-
-  useEffect(() => {
-    setForm(form);
-
-    const username = session?.data?.user?.name;
-
-    if (
-      (session?.status === 'authenticated' && form.values.username === '') ||
-      (username !== 'Guest' &&
-        session?.status === 'authenticated' &&
-        form.values.username === 'Guest')
-    ) {
-      form.setFieldValue('username', username);
-    }
-  }, [session?.status, session?.data?.user?.name, form.values.username]);
-
-  useEffect(() => {
-    if (!debouncedUsername || debouncedUsername === session?.data?.user?.name)
-      return;
-
-    (async () => {
-      if (await checkUsername(debouncedUsername, setCheckingUsername)) {
-        form.setFieldError('username', 'Username is already taken');
-      }
-    })();
-  }, [debouncedUsername]);
 
   return (
     <Stack

@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import styles from './SignIn.module.css';
 import {
+  Box,
   Button,
   Highlight,
+  LoadingOverlay,
   Paper,
   PasswordInput,
   Text,
@@ -13,11 +15,11 @@ import {
 import { useForm } from '@mantine/form';
 import { MdOutlineInfo, MdOutlineLock, MdOutlineLogin } from 'react-icons/md';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import UsernameInput from '@/components/common/CustomInputs/UsernameInput';
-import { useGlobalStore } from '@/stores/global';
+import { useRedirect } from '@/hooks/useRedirect';
 
 type FormData = {
   username: string;
@@ -27,7 +29,9 @@ type FormData = {
 const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { session } = useGlobalStore();
+  const { data, status, update } = useSession();
+
+  useRedirect(status, data?.user?.name || 'Guest');
 
   const form = useForm<FormData>({
     initialValues: {
@@ -46,7 +50,7 @@ const SignIn = () => {
 
     if (res?.status === 200) {
       toast.success('Successfully signed in!');
-      await session?.update({ name: data.username });
+      await update({ name: data.username });
       router.back();
     } else {
       form.setErrors({
@@ -59,8 +63,19 @@ const SignIn = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <Paper shadow="md" withBorder p="lg" radius={8} className={styles.paper}>
+    <Box className={styles.container}>
+      <Paper
+        pos="relative"
+        shadow="md"
+        withBorder
+        p="lg"
+        radius={8}
+        className={styles.paper}
+      >
+        <LoadingOverlay
+          visible={status === 'loading'}
+          loaderProps={{ type: 'bars' }}
+        />
         <form
           className={styles.form}
           onSubmit={(e) => {
@@ -81,7 +96,7 @@ const SignIn = () => {
               </ThemeIcon>
             </Tooltip>
           </Text>
-          <div className={styles.inputs}>
+          <Box className={styles.inputs}>
             <UsernameInput form={form} disabled={loading} />
             <PasswordInput
               placeholder="Password"
@@ -91,8 +106,8 @@ const SignIn = () => {
               key={form.key('password')}
               {...form.getInputProps('password')}
             />
-          </div>
-          <div className={styles.signupText}>
+          </Box>
+          <Box className={styles.signupText}>
             <Text
               fz="sm"
               ta="center"
@@ -124,7 +139,7 @@ const SignIn = () => {
                 </Highlight>
               </Link>
             </Tooltip>
-          </div>
+          </Box>
           <Button
             leftSection={<MdOutlineLogin size={16} />}
             variant="gradient"
@@ -140,7 +155,7 @@ const SignIn = () => {
           </Button>
         </form>
       </Paper>
-    </div>
+    </Box>
   );
 };
 

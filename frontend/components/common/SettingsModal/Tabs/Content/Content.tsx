@@ -1,98 +1,14 @@
-/* eslint-disable indent */
-import { fetcher } from '@/lib/fetcher';
-import { Checkbox, Select, Stack } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useSession } from 'next-auth/react';
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+'use client';
 
-const Content = () => {
-  const [loading, setLoading] = useState(false);
-  const { data: userData, status, update } = useSession();
+import React from 'react';
+import { Stack, Select, Checkbox } from '@mantine/core';
+import { useSettingsForm } from '../hooks/useContentForm';
+import { useSessionStore } from '@/stores/sessionStore';
 
-  const form = useForm({
-    initialValues: {
-      profanesAllowed: userData?.user?.settings?.profanesAllowed ?? false,
-      wordListSortBy:
-        userData?.user?.settings?.wordListSortBy ?? 'ALPHABETICAL',
-    },
-  });
-
-  const handleCheckboxChange =
-    (checkboxName: string) =>
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (loading) return;
-
-      setLoading(true);
-      form.setFieldValue(checkboxName, event.target.checked);
-
-      await toast.promise(
-        fetcher('PATCH', { wholeResponse: true })('api/player/update', {
-          ...userData?.user?.settings,
-          [checkboxName]: event.target.checked,
-        }),
-        {
-          loading: 'Updating settings...',
-          success: () => {
-            update({
-              settings: {
-                ...userData?.user?.settings,
-                [checkboxName]: event.target.checked,
-              },
-            });
-            return 'Settings updated successfully';
-          },
-          error: () => {
-            form.setFieldValue(checkboxName, !event.target.checked);
-            return 'Failed to update settings';
-          },
-        },
-        {
-          position: 'top-right',
-        }
-      );
-
-      setLoading(false);
-    };
-
-  const handleSelectChange =
-    (selectName: string) => async (value: string | null) => {
-      if (loading) return;
-
-      setLoading(true);
-      form.setFieldValue(selectName, value);
-
-      await toast.promise(
-        fetcher('PATCH', { wholeResponse: true })('api/player/update', {
-          ...userData?.user?.settings,
-          [selectName]: value,
-        }),
-        {
-          loading: 'Updating settings...',
-          success: () => {
-            update({
-              settings: {
-                ...userData?.user?.settings,
-                [selectName]: value,
-              },
-            });
-            return 'Settings updated successfully';
-          },
-          error: () => {
-            form.setFieldValue(
-              selectName,
-              (userData?.user?.settings as any)?.[selectName] ?? 'ALPHABETICAL'
-            );
-            return 'Failed to update settings';
-          },
-        },
-        {
-          position: 'top-right',
-        }
-      );
-
-      setLoading(false);
-    };
+const Content: React.FC = () => {
+  const { session } = useSessionStore();
+  const { form, loading, handleCheckboxChange, handleSelectChange } =
+    useSettingsForm();
 
   return (
     <Stack gap="lg">
@@ -105,7 +21,7 @@ const Content = () => {
           { value: 'OLDEST_FIRST', label: 'Oldest word first' },
         ]}
         allowDeselect={false}
-        disabled={status === 'loading' || loading}
+        disabled={session?.status === 'loading' || loading}
         key={form.key('wordListSortBy')}
         {...form.getInputProps('wordListSortBy')}
         onChange={handleSelectChange('wordListSortBy')}
@@ -114,7 +30,7 @@ const Content = () => {
         label="Allow profane words?"
         description="Parental advisory is recommended"
         styles={{ icon: { color: 'white' }, description: { marginTop: 0 } }}
-        disabled={status === 'loading' || loading}
+        disabled={session?.status === 'loading' || loading}
         key={form.key('profanesAllowed')}
         {...form.getInputProps('profanesAllowed')}
         onChange={handleCheckboxChange('profanesAllowed')}

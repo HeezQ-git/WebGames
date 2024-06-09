@@ -75,13 +75,6 @@ const updatePlayer = async (req, res) => {
   const { profanesAllowed, wordListSortBy } = req.body;
   const playerCookie = req.playerCookie;
 
-  console.log(
-    'profanesAllowed',
-    profanesAllowed,
-    'wordListSortBy',
-    wordListSortBy
-  );
-
   try {
     const player = await prisma.player.findUnique({
       where: {
@@ -181,7 +174,7 @@ const deletePlayerProgress = async (req, res) => {
   }
 };
 
-const deletePlayerAccount = async (req, res) => {
+const deletePlayerAccount = async (req, res, withoutResponse) => {
   let playerCookie = req.playerCookie;
   if (req.oldCookie) playerCookie = req.oldCookie;
 
@@ -196,19 +189,7 @@ const deletePlayerAccount = async (req, res) => {
       return res.status(400).json({ message: 'Player not found' });
     }
 
-    await deletePlayerProgress(req, res, playerCookie);
-
-    await prisma.playerSettings.delete({
-      where: {
-        playerId: player.id,
-      },
-    });
-
-    await prisma.playerSettings.delete({
-      where: {
-        playerId: player.id,
-      },
-    });
+    await deletePlayerProgress(req, res);
 
     await prisma.player.delete({
       where: {
@@ -216,13 +197,15 @@ const deletePlayerAccount = async (req, res) => {
       },
     });
 
-    return res.status(200);
+    if (withoutResponse) return res.status(200);
+    return res.status(200).json({ message: 'Player deleted successfully' });
   } catch (error) {
     console.log(
       `Error in player.controller deletePlayerAccount`,
       error.message
     );
-    res.status(500);
+    if (withoutResponse) return res.status(500);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 

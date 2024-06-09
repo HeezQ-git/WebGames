@@ -1,7 +1,6 @@
-import { fetcher } from '@/lib/fetcher';
-import { useGlobalStore } from '@/stores/global';
-import { useModalStore } from '@/stores/modal';
-import { useSettingsStore } from '@/stores/settings';
+'use client';
+
+import React from 'react';
 import {
   Button,
   Checkbox,
@@ -12,56 +11,15 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useRouter } from 'next/navigation';
-import React from 'react';
-import toast from 'react-hot-toast';
 import { MdOutlineDelete } from 'react-icons/md';
+import toast from 'react-hot-toast';
+import { useDangerAction } from '../hooks/useDangerAction';
+import { useModalStore } from '@/stores/modalStore';
 
 const DangerModal = () => {
-  const { openModal, setOpenModal } = useModalStore();
-  const { dangerAction } = useSettingsStore();
-  const { fetchGames } = useGlobalStore();
-  const router = useRouter();
-
-  const form = useForm({
-    initialValues: {
-      confirm: '',
-      agreement: false,
-    },
-    validate: {
-      confirm: (value) => (value === 'CONFIRM' ? null : 'Invalid code'),
-      agreement: (value) => (value ? null : 'You must agree to continue'),
-    },
-  });
-
-  const handleDangerAction = async () => {
-    if (dangerAction === 'reset') {
-      const res = await fetcher('DELETE', { wholeResponse: true })(
-        'api/player/progress'
-      );
-
-      if (res.status === 200) {
-        toast.success('Progress reset successfully');
-        await fetchGames?.();
-      } else {
-        toast.error('An error occurred while resetting your progress');
-      }
-    } else {
-      const res = await fetcher('DELETE', { wholeResponse: true })(
-        'api/player/account'
-      );
-
-      if (res.status === 200) {
-        router.push('/signout');
-        toast.success('Account deleted successfully');
-      } else {
-        toast.error('An error occurred while deleting your account');
-      }
-    }
-
-    setOpenModal('SETTINGS');
-  };
+  const { openModal } = useModalStore();
+  const { form, handleDangerAction, setOpenModal, dangerAction } =
+    useDangerAction();
 
   return (
     <Modal

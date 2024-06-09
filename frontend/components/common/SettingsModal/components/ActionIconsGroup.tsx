@@ -1,14 +1,13 @@
-import { useGlobalStore } from '@/stores/global';
-import { useSettingsStore } from '@/stores/settings';
-import { EditableElement } from '@/types/settingsStore';
-import { ActionIcon, Tooltip } from '@mantine/core';
 import React from 'react';
+import { useSessionStore } from '@/stores/sessionStore';
+import { useSettingsStore, EditableElement } from '@/stores/settingsStore';
+import { ActionIcon, Tooltip } from '@mantine/core';
 import { MdOutlineClose, MdOutlineEdit, MdOutlineSave } from 'react-icons/md';
 
 const ActionIconsGroup = ({ fieldName }: { fieldName: string }) => {
   const { editingElement, setEditingElement, form } = useSettingsStore();
 
-  const { session } = useGlobalStore();
+  const { session } = useSessionStore();
 
   return (
     <ActionIcon.Group>

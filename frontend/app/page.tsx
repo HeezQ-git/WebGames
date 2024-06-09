@@ -9,5 +9,6 @@ export default function Home() {
   useEffect(() => {
     router.push('/spelling-bee');
   }, []);
+
   return null;
 }
