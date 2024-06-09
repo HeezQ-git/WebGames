@@ -16,7 +16,7 @@ const corsOptions = {
   origin: [
     'http://localhost:3000',
     'https://web-games-one.vercel.app/',
-    'https://web-games-one.vercel.app',
+    'https://web-games-frontend-git-dev-heezqgits-projects.vercel.app/',
   ],
   credentials: true,
 };
