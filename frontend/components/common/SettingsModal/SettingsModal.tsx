@@ -57,7 +57,7 @@ const SettingsModal = () => {
           setOpenModal(null);
           setEditingElement(null);
           setActive(0);
-          form.reset();
+          form?.reset();
         }}
         title={<span className="modalTitle">Settings</span>}
         className={styles.settings}

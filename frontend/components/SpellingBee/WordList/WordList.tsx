@@ -8,7 +8,7 @@ import { MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import { useMappedWords } from './hooks/useMappedWords';
 import styles from './WordList.module.css';
 import { WordListContentProps, WordListHeaderProps } from './types';
-import { useGameStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 const WordItem = dynamic(() => import('./WordItem/WordItem'), {
   ssr: false,

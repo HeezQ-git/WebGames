@@ -3,7 +3,7 @@ import { ActionIcon, Tooltip } from '@mantine/core';
 import toast from 'react-hot-toast';
 import InlineKeys from '@/components/SpellingBee/InlineKeys/InlineKeys';
 import Dot from '@/components/SpellingBee/Dot/Dot';
-import { Game } from '@/stores/gameStore';
+import { Game } from '@/stores/SpellingBee/gameStore';
 import { Modals } from '@/stores/modalStore';
 import { MdOutlineDelete, MdOutlineShare } from 'react-icons/md';
 import styles from './GamesModal.module.css';

@@ -1,0 +1,60 @@
+.key {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: darken(var(--mantine-color-dark-3), 0.3);
+  border: 0.5px solid var(--mantine-color-dark-3);
+  font-size: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  flex: 1;
+  height: 58px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.075s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  margin-inline: 3px;
+
+  &:hover {
+    background-color: var(--mantine-color-dark-3);
+  }
+
+  &:active {
+    background-color: var(--mantine-color-dark-2);
+  }
+
+  @mixin smaller-than 768px {
+    height: 48px;
+    transition: background-color 0.05s ease;
+
+    &:active {
+      background-color: darken(var(--mantine-color-dark-3), 0.3);
+    }
+  }
+}
+
+.specialKey {
+  flex: 1.5;
+  font-size: 12px;
+}
+
+.emptySpace {
+  flex: 0.5;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.spot {
+  border: none;
+}
+
+.correctSpot {
+  background-color: var(--wordle-green);
+}
+
+.isPresent {
+  background-color: var(--wordle-yellow);
+}
+
+.notInWord {
+  background-color: var(--wordle-gray);
+}

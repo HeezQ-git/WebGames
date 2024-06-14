@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma');
+const prisma = require('../../lib/prisma');
 
 const submitWord = async (req, res) => {
   const { gameId, word, points } = req.body;

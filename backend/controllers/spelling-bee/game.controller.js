@@ -1,6 +1,6 @@
-const getWordScore = require('../lib/getWordScore');
-const prisma = require('../lib/prisma');
-const generateLettersRegexPattern = require('../lib/regexpPatterns');
+const getWordScore = require('../../lib/getWordScore');
+const prisma = require('../../lib/prisma');
+const generateLettersRegexPattern = require('../../lib/regexpPatterns');
 
 // prettier-ignore
 const mostCommonLetters = ['E', 'A', 'I', 'O', 'N', 'R', 'T', 'L', 'S', 'U'];

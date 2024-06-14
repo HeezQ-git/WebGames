@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './Key.module.css';
 import clsx from 'clsx';
 import { UnstyledButton } from '@mantine/core';
-import { useInputStore } from '@/stores/inputStore';
+import { useInputStore } from '@/stores/SpellingBee/inputStore';
 
 const Key = ({
   centerKey,

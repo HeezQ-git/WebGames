@@ -3,8 +3,8 @@
 import React, { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { Modal, Text, Skeleton } from '@mantine/core';
-import { useGameStore } from '@/stores/gameStore';
-import { useRankStore } from '@/stores/rankStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
+import { useRankStore } from '@/stores/SpellingBee/rankStore';
 import styles from './RankingModal.module.css';
 import { RankingModalProps } from './types';
 

@@ -1,0 +1,96 @@
+.inputElementContainer {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  perspective: 1000px;
+}
+
+.inputElement {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backface-visibility: hidden;
+  width: 62px;
+  height: 62px;
+  font-size: 32px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 2px solid var(--mantine-color-dark-4);
+  transform: rotateX(0);
+  user-select: none;
+}
+
+.hasLetter {
+  border: 2px solid darken(var(--mantine-color-dark-3), 0.15);
+}
+
+.hasSpot {
+  border: none;
+}
+
+.letter {
+  border-color: darken(var(--mantine-color-dark-3), 0.15);
+}
+
+.flipIn {
+  animation: flip-in 200ms ease-out forwards;
+}
+
+.flipOut {
+  animation: flip-out 500ms ease-out forwards;
+}
+
+.popIn {
+  animation: pop-in 100ms ease-in forwards;
+}
+
+.idle {
+  animation: none;
+}
+
+.correctSpot {
+  background-color: var(--wordle-green);
+}
+
+.isPresent {
+  background-color: var(--wordle-yellow);
+}
+
+.notInWord {
+  background-color: var(--wordle-gray);
+}
+
+@keyframes flip-in {
+  0% {
+    transform: rotateX(90deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes flip-out {
+  0% {
+    transform: rotateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(90deg);
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.075);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

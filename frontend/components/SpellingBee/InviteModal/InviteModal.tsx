@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { fetcher, useFetcherSWR } from '@/lib/fetcher';
 import InlineKeys from '../InlineKeys/InlineKeys';
-import { useGameStore, Game } from '@/stores/gameStore';
+import { useGameStore, Game } from '@/stores/SpellingBee/gameStore';
 import styles from './InviteModal.module.css';
 
 const InfoRow = ({
@@ -38,7 +38,7 @@ const InviteModal: React.FC = () => {
 
   const { data: inviteGame, isLoading } = useFetcherSWR<Game>(
     'GET',
-    invite ? `api/game/byId/${invite}` : undefined
+    invite ? `api/spelling-bee/game/byId/${invite}` : undefined
   );
 
   useEffect(() => {
@@ -74,7 +74,9 @@ const InviteModal: React.FC = () => {
   };
 
   const handleAccept = async () => {
-    await fetcher('POST')(`api/game/add-player`, { gameId: invite });
+    await fetcher('POST')(`api/spelling-bee/game/add-player`, {
+      gameId: invite,
+    });
     setInvite(null);
     await fetchGames?.();
     setCurrentGame(invite!);

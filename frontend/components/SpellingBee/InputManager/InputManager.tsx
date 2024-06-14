@@ -3,8 +3,8 @@
 import { useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useModalStore } from '@/stores/modalStore';
-import { useInputStore } from '@/stores/inputStore';
-import { useGameStore } from '@/stores/gameStore';
+import { useInputStore } from '@/stores/SpellingBee/inputStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 const allowedKeys = [' ', 'Backspace', 'Delete', 'Enter'];
 
