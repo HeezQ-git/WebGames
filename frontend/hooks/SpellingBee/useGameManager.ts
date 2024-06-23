@@ -4,8 +4,8 @@ import { useGlobalStore } from '@/stores/globalStore';
 import { useGameStore, Game } from '@/stores/SpellingBee/gameStore';
 import { useRankStore } from '@/stores/SpellingBee/rankStore';
 import { fetcher, useFetcherSWR } from '@/lib/fetcher';
-import { useSessionManager } from '../useSessionManager';
 import { useRanks } from './useRanks';
+import { useSessionStore } from '@/stores/sessionStore';
 
 export const useGameManager = () => {
   const [retryCount, setRetryCount] = useState(0);
@@ -22,7 +22,8 @@ export const useGameManager = () => {
     },
   });
 
-  const { session, pid, setPid, handleSession } = useSessionManager();
+  const [pid, setPid] = useState<string | undefined>();
+  const { session } = useSessionStore();
   const { ranksPoints, getCurrentRank } = useRanks();
 
   const getLastPlayedGame = useCallback(async () => {
@@ -78,7 +79,7 @@ export const useGameManager = () => {
     setGames(games || []);
     await getLastPlayedGame();
 
-    if (!games?.length && !isLoading && !globalIsLoading && session.status === 'authenticated') {
+    if (!games?.length && !isLoading && !globalIsLoading && session?.status === 'authenticated') {
       await createNewGame();
     }
 
@@ -86,7 +87,7 @@ export const useGameManager = () => {
       setFetchGames(mutate);
     }
   }, [
-    session.status,
+    session?.status,
     games,
     isLoading,
     globalIsLoading,
@@ -119,8 +120,4 @@ export const useGameManager = () => {
   useEffect(() => {
     manageGames();
   }, [manageGames]);
-
-  useEffect(() => {
-    handleSession();
-  }, [handleSession]);
 };

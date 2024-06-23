@@ -22,7 +22,7 @@ const createGameAndReturn = async (playerCookie) => {
   });
 
   const wordList = getWordsFromJSON();
-  if (settings.profanesAllowed) wordList.concat(getProfaneWordsFromJSON());
+  if (settings?.profanesAllowed) wordList.concat(getProfaneWordsFromJSON());
 
   const wordToGuess = wordList[Math.floor(Math.random() * wordList.length)];
 
@@ -70,7 +70,7 @@ const createNewGame = async (req, res) => {
       .status(200)
       .json({ gameId: newGame.id, wordToGuess: newGame.wordToGuess });
   } catch (error) {
-    console.error(`Error in game.controller createGame:`, error.message);
+    console.error(`Error in game.controller createNewGame:`, error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
@@ -105,7 +105,7 @@ const getOrCreateGame = async (req, res) => {
 
     return res.status(200).json(game);
   } catch (error) {
-    console.error(`Error in game.controller getGame:`, error.message);
+    console.error(`Error in game.controller getOrCreateGame:`, error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };

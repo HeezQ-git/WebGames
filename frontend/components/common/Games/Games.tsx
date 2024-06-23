@@ -11,11 +11,11 @@ const Games = () => {
   return (
     <Stack className={styles.games} gap="xs">
       <Text fz="h2">Games</Text>
-      <Text>
+      <Text ta="center">
         This is the games page. Here you will find all the games that we have
         available for you to play.
       </Text>
-      <Group>
+      <Group justify="center">
         <Card shadow="md" padding="lg" radius="md" withBorder w="300px">
           <Card.Section>
             <Image

@@ -95,6 +95,22 @@ const StatsModal = () => {
     []
   );
 
+  const correctGuesses = useMemo(
+    () =>
+      Object.values(stats?.winStats || {}).reduce(
+        (acc, curr, index) => acc + curr,
+        0
+      ),
+    [stats]
+  );
+
+  const winRatio = useMemo(
+    () =>
+      Math.round(((correctGuesses || 0) / (stats?.gamesPlayed || 0)) * 100) ||
+      0,
+    [stats]
+  );
+
   return (
     <Modal
       opened={openModal === 'STATS'}
@@ -117,7 +133,7 @@ const StatsModal = () => {
             </Text>
             <Flex justify="space-between" wrap="wrap">
               <StatBox label="Played" value={stats?.gamesPlayed || 0} />
-              <StatBox label="Win %" value={0} />
+              <StatBox label="Win %" value={winRatio} />
               <StatBox
                 label="Streak"
                 value={stats?.streak || 0}

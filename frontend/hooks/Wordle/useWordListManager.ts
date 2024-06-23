@@ -1,7 +1,7 @@
 import { useFetcherSWR } from '@/lib/fetcher';
 import { useGameStore } from '@/stores/Wordle/gameStore';
 import { useEffect } from 'react';
-import { useSessionManager } from '../useSessionManager';
+import { useSessionStore } from '@/stores/sessionStore';
 
 const swrOptions = {
   revalidateOnReconnect: false,
@@ -12,7 +12,7 @@ const swrOptions = {
 
 export const useWordListManager = () => {
   const { setWordList } = useGameStore();
-  const { session } = useSessionManager();
+  const { session } = useSessionStore();
 
   const { data: words, isLoading: wordsIsLoading } = useFetcherSWR<string[]>(
     'GET',

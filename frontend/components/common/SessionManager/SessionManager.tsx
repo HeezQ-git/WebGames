@@ -1,21 +1,38 @@
 import { useSessionStore } from '@/stores/sessionStore';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const SessionManager = () => {
-  const { session } = useSessionStore();
+  const { setSession, setProfanesAllowed } = useSessionStore();
+  const session = useSession();
 
   const handleSignIn = async () => {
     await signIn('credentials', {
       isGuest: true,
-      callbackUrl: '/',
+      callbackUrl: '/games',
       redirect: true,
     });
   };
 
   useEffect(() => {
-    if (session?.status === 'unauthenticated') handleSignIn();
-  }, [session?.status]);
+    setSession(session);
+
+    if (
+      session?.status === 'loading' ||
+      session?.status === 'unauthenticated'
+    ) {
+      if (session?.status === 'unauthenticated') {
+        handleSignIn();
+        toast.loading('Creating guest account...', { id: 'guest' });
+      }
+      return;
+    }
+    toast.dismiss('guest');
+
+    setProfanesAllowed(session?.data?.user?.settings?.profanesAllowed || false);
+  }, [session]);
+
   return null;
 };
 

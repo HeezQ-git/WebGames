@@ -65,8 +65,7 @@ const Header = () => {
             >
               Settings
             </Menu.Item>
-            {session?.data?.user?.name === 'Guest' ||
-            session?.data?.user?.name === undefined ? (
+            {session?.data?.user?.name === 'Guest' ? (
               <Tooltip
                 label="Sign in to save progress"
                 position="left"

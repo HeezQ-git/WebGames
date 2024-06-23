@@ -158,7 +158,7 @@ const deletePlayerProgress = async (req, res) => {
       });
 
       if (!otherPlayers?.length) {
-        await prisma.game.delete({
+        await prisma.sbGame.delete({
           where: { id: game.id },
         });
       }
@@ -209,14 +209,14 @@ const deletePlayerAccount = async (req, res, withoutResponse) => {
       },
     });
 
-    if (withoutResponse) return res.status(200);
+    if (withoutResponse === true) return res.status(200);
     return res.status(200).json({ message: 'Player deleted successfully' });
   } catch (error) {
     console.log(
       `Error in player.controller deletePlayerAccount`,
       error.message
     );
-    if (withoutResponse) return res.status(500);
+    if (withoutResponse === true) return res.status(500);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
