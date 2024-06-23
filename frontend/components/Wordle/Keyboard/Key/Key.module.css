@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: darken(var(--mantine-color-dark-3), 0.3);
+  background-color: darken(var(--mantine-color-dark-3), 0.2);
   border: 0.5px solid var(--mantine-color-dark-3);
   font-size: 20px;
   font-weight: bold;
@@ -11,23 +11,37 @@
   height: 58px;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.075s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   margin-inline: 3px;
+  color: darken(white, 0.05);
 
   &:hover {
-    background-color: var(--mantine-color-dark-3);
+    background-color: darken(var(--mantine-color-dark-3), 0.3);
   }
 
   &:active {
-    background-color: var(--mantine-color-dark-2);
+    background-color: darken(var(--mantine-color-dark-3), 0.4);
   }
 
   @mixin smaller-than 768px {
     height: 48px;
-    transition: background-color 0.05s ease;
 
     &:active {
       background-color: darken(var(--mantine-color-dark-3), 0.3);
+    }
+  }
+
+  @mixin light {
+    background-color: var(--mantine-color-gray-3);
+    border-color: darken(var(--mantine-color-gray-3), 0.1);
+    color: lighten(black, 0.05);
+
+    &:hover {
+      background-color: darken(var(--mantine-color-gray-3), 0.1);
+    }
+
+    &:active {
+      background-color: darken(var(--mantine-color-gray-3), 0.2);
     }
   }
 }
@@ -44,17 +58,50 @@
 }
 
 .spot {
-  border: none;
+  border: 1px solid transparent;
+
+  @mixin light {
+    color: darken(white, 0.05);
+  }
 }
 
 .correctSpot {
-  background-color: var(--wordle-green);
+  background-color: var(--wordle-green) !important;
+
+  &:hover {
+    background-color: darken(var(--wordle-green), 0.1) !important;
+  }
 }
 
 .isPresent {
-  background-color: var(--wordle-yellow);
+  background-color: var(--wordle-yellow) !important;
+
+  &:hover {
+    background-color: darken(var(--wordle-yellow), 0.1) !important;
+  }
 }
 
 .notInWord {
-  background-color: var(--wordle-gray);
+  background-color: var(--wordle-gray) !important;
+
+  &:hover {
+    background-color: darken(var(--wordle-gray), 0.1) !important;
+  }
+}
+
+.disabled {
+  background-color: var(--mantine-color-dark-4) !important;
+  cursor: not-allowed;
+
+  &:hover {
+    background-color: var(--mantine-color-dark-4) !important;
+  }
+
+  @mixin light {
+    background-color: var(--mantine-color-gray-4) !important;
+
+    &:hover {
+      background-color: var(--mantine-color-gray-4) !important;
+    }
+  }
 }

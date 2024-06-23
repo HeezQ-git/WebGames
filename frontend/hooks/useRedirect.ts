@@ -6,7 +6,7 @@ export const useRedirect = (status: string, username: string) => {
 
   useEffect(() => {
     if (status === 'authenticated' && username !== 'Guest') {
-      router.push('/');
+      router.push('/games');
     }
   }, [username, status]);
 }

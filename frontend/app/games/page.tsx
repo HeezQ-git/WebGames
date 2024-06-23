@@ -1,15 +1,8 @@
-import { Stack, Text } from '@mantine/core';
-import Link from 'next/link';
+import Games from '@/components/common/Games/Games';
 import React from 'react';
 
-const page = () => {
-  return (
-    <Stack>
-      <Text>Games:</Text>
-      <Link href="/spelling-bee">Spelling Bee</Link>
-      <Link href="/wordle">Wordle</Link>
-    </Stack>
-  );
+const GamesPage = () => {
+  return <Games />;
 };
 
-export default page;
+export default GamesPage;

@@ -6,10 +6,8 @@ import WordList from '@/components/SpellingBee/WordList/WordList';
 import Input from '@/components/SpellingBee/Input/Input';
 import Keys from '@/components/SpellingBee/Keys/Keys';
 import Ranking from '@/components/SpellingBee/Ranking/Ranking';
-import InputManager from '@/components/SpellingBee/InputManager/InputManager';
 import Buttons from '@/components/SpellingBee/Buttons/Buttons';
 import Header from '@/components/SpellingBee/Header/Header';
-import GameManager from '@/components/SpellingBee/GameManager/GameManager';
 import Confetti from 'react-confetti';
 import { useViewportSize } from '@mantine/hooks';
 import InviteModal from '@/components/SpellingBee/InviteModal/InviteModal';
@@ -17,11 +15,16 @@ import Loading from '@/components/common/Loading/Loading';
 import { useGameStore } from '@/stores/SpellingBee/gameStore';
 import { useConfettiStore } from '@/stores/SpellingBee/confettiStore';
 import { Box, Container } from '@mantine/core';
+import { useGameManager } from '@/hooks/SpellingBee/useGameManager';
+import { useInputManager } from '@/hooks/SpellingBee/useInputManager';
 
 const SpellingBee = () => {
   const { games, currentGame } = useGameStore();
   const { confetti } = useConfettiStore();
   const { height, width } = useViewportSize();
+
+  useGameManager();
+  useInputManager();
 
   return (
     <Suspense fallback={<Loading />}>
@@ -57,8 +60,6 @@ const SpellingBee = () => {
         ) : (
           <Loading />
         )}
-        <InputManager />
-        <GameManager />
       </Container>
     </Suspense>
   );

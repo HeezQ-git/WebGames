@@ -9,6 +9,9 @@ const playerRoutes = require('./routes/player.routes');
 const sbWordRoutes = require('./routes/spelling-bee/word.routes');
 const sbGameRoutes = require('./routes/spelling-bee/game.routes');
 
+const wdWordRoutes = require('./routes/wordle/word.routes');
+const wdGameRoutes = require('./routes/wordle/game.routes');
+
 const PORT = process.env.PORT || 8000;
 const app = express();
 
@@ -79,6 +82,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/player', playerRoutes);
 app.use('/api/spelling-bee/word', sbWordRoutes);
 app.use('/api/spelling-bee/game', sbGameRoutes);
+app.use('/api/wordle/word', wdWordRoutes);
+app.use('/api/wordle/game', wdGameRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);

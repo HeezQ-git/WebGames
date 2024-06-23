@@ -1,58 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styles from './InputElement.module.css';
 import { Box } from '@mantine/core';
 import clsx from 'clsx';
+import { useAnimationStore } from '@/stores/Wordle/animationStore';
 
-const InputElement = ({
-  letter,
-  spot,
-  animationDelay,
-}: {
+interface InputElementProps {
   letter: string | undefined;
   spot: 'CORRECT' | 'PRESENT' | 'NOT_IN_WORD' | undefined;
   animationDelay: number;
+  row: number;
+  letterIndex: number;
+}
+
+const InputElement: React.FC<InputElementProps> = ({
+  letter,
+  spot,
+  animationDelay,
+  row,
+  letterIndex,
 }) => {
+  const { animationMap, setAnimation } = useAnimationStore();
   const [cachedSpot, setCachedSpot] = useState(spot);
   const [cachedLetter, setCachedLetter] = useState(letter);
-  const [currentAnimation, setCurrentAnimation] = useState<string | null>(null);
+
+  const letterAnimation = useMemo(
+    () =>
+      animationMap.find((a) => a.row === row && a.letterIndex === letterIndex),
+    [animationMap, row, letterIndex]
+  );
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout | null = null;
-
-    if (cachedLetter !== letter && letter) {
-      setCurrentAnimation('popIn');
-
-      timeout = setTimeout(() => {
-        setCachedLetter(letter);
-        setCurrentAnimation('idle');
-      }, 100);
-    } else if (!letter) {
-      setCurrentAnimation('idle');
+    if (!letter) {
+      setAnimation('idle');
       setCachedLetter(undefined);
+      setCachedSpot(undefined);
+    } else if (cachedLetter !== letter) {
+      setAnimation('popIn', {
+        duration: 100,
+        row,
+        letterIndex,
+      });
+      setCachedLetter(letter);
     } else if (cachedSpot !== spot) {
-      let timeout: NodeJS.Timeout | null = null;
-
       setTimeout(() => {
-        setCurrentAnimation('flipOut');
-
-        timeout = setTimeout(() => {
+        setAnimation('flipOut', {
+          duration: 150,
+          row,
+          letterIndex,
+          continuous: true,
+        });
+        setTimeout(() => {
           setCachedSpot(spot);
-          setCurrentAnimation('flipIn');
-        }, 250);
+          setAnimation('flipIn', {
+            duration: 200,
+            row,
+            letterIndex,
+          });
+        }, 200);
       }, animationDelay);
     }
-    return () => clearTimeout(timeout as NodeJS.Timeout);
-  }, [spot, letter, cachedSpot, cachedLetter]);
+  }, [
+    letter,
+    spot,
+    cachedLetter,
+    cachedSpot,
+    setAnimation,
+    animationDelay,
+    row,
+    letterIndex,
+  ]);
 
   return (
     <Box className={styles.inputElementContainer}>
       <Box
         className={clsx(
           styles.inputElement,
-          currentAnimation === 'idle' && styles.idle,
-          currentAnimation === 'flipOut' && styles.flipOut,
-          currentAnimation === 'flipIn' && styles.flipIn,
-          currentAnimation === 'popIn' && styles.popIn,
+          styles[letterAnimation?.animation || 'idle'],
           cachedSpot === 'CORRECT' && styles.correctSpot,
           cachedSpot === 'PRESENT' && styles.isPresent,
           cachedSpot === 'NOT_IN_WORD' && styles.notInWord,

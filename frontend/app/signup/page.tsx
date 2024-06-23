@@ -40,7 +40,7 @@ type FormData = {
   confirmPassword: string;
 };
 
-const SignIn = () => {
+const SignUp = () => {
   const [submitting, setSubmitting] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const router = useRouter();
@@ -221,4 +221,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;

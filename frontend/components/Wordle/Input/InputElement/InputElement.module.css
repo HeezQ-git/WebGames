@@ -19,30 +19,56 @@
   border: 2px solid var(--mantine-color-dark-4);
   transform: rotateX(0);
   user-select: none;
+  color: darken(white, 0.05);
+
+  @mixin light {
+    border: 2px solid var(--mantine-color-gray-6);
+    color: lighten(black, 0.05);
+  }
 }
 
 .hasLetter {
   border: 2px solid darken(var(--mantine-color-dark-3), 0.15);
-}
 
-.hasSpot {
-  border: none;
+  @mixin light {
+    border: 2px solid darken(var(--mantine-color-gray-7), 0.1);
+  }
 }
 
 .letter {
   border-color: darken(var(--mantine-color-dark-3), 0.15);
+
+  @mixin light {
+    border-color: darken(var(--mantine-color-gray-3), 0.1);
+  }
+}
+
+.hasSpot {
+  border: none;
+
+  @mixin light {
+    color: darken(white, 0.05);
+  }
 }
 
 .flipIn {
-  animation: flip-in 200ms ease-out forwards;
+  animation: flip-in 400ms ease-out forwards;
 }
 
 .flipOut {
-  animation: flip-out 500ms ease-out forwards;
+  animation: flip-out 400ms ease-out;
 }
 
 .popIn {
   animation: pop-in 100ms ease-in forwards;
+}
+
+.jiggle {
+  animation: jiggle 750ms ease forwards;
+}
+
+.shake {
+  animation: shake 300ms ease forwards;
 }
 
 .idle {
@@ -92,5 +118,41 @@
   }
   100% {
     transform: scale(1);
+  }
+}
+
+@keyframes jiggle {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+  100% {
+    transform: translateX(0);
   }
 }
