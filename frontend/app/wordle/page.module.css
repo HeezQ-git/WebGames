@@ -2,14 +2,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   height: 100%;
 
   .content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: max-content;
+    justify-content: center;
+    height: 100%;
     gap: 120px;
 
     width: clamp(300px, 100%, 500px);

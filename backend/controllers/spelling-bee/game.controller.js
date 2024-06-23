@@ -81,7 +81,7 @@ const createGame = async (req, res) => {
 
     const maximumScore = words.reduce((score, word) => score + word.points, 0);
 
-    const game = await prisma.game.create({
+    const game = await prisma.sbGame.create({
       data: {
         letters,
         centerLetter,
@@ -92,7 +92,7 @@ const createGame = async (req, res) => {
     });
 
     // Create the PlayerGame relationship
-    await prisma.playerGame.create({
+    await prisma.sbPlayerGame.create({
       data: {
         playerId: player.id,
         gameId: game.id,
@@ -110,7 +110,7 @@ const getAllGames = async (req, res) => {
   const playerId = req.playerId;
 
   try {
-    const games = await prisma.game.findMany({
+    const games = await prisma.sbGame.findMany({
       where: {
         players: {
           some: { playerId },
@@ -143,7 +143,7 @@ const deleteGame = async (req, res) => {
   }
 
   try {
-    const game = await prisma.game.findFirst({
+    const game = await prisma.sbGame.findFirst({
       where: {
         id: gameId,
         players: {
@@ -158,7 +158,7 @@ const deleteGame = async (req, res) => {
         .json({ message: 'Player is not part of this game' });
     }
 
-    await prisma.playerGame.deleteMany({
+    await prisma.sbPlayerGame.deleteMany({
       where: {
         gameId,
         playerId,
@@ -166,7 +166,7 @@ const deleteGame = async (req, res) => {
     });
 
     // check if there are any other players in the game
-    const otherPlayers = await prisma.playerGame.findMany({
+    const otherPlayers = await prisma.sbPlayerGame.findMany({
       where: {
         gameId,
         NOT: { playerId },
@@ -174,7 +174,7 @@ const deleteGame = async (req, res) => {
     });
 
     if (!otherPlayers?.length) {
-      await prisma.game.delete({
+      await prisma.sbGame.delete({
         where: { id: gameId },
       });
     }
@@ -199,7 +199,7 @@ const getAllGameWords = async (req, res) => {
   }
 
   try {
-    const game = await prisma.game.findFirst({
+    const game = await prisma.sbGame.findFirst({
       where: {
         id: gameId,
         players: {
@@ -258,7 +258,7 @@ const addPlayerToGame = async (req, res) => {
       return res.status(400).json({ error: 'Player not found' });
     }
 
-    const gameExists = await prisma.game.findUnique({
+    const gameExists = await prisma.sbGame.findUnique({
       where: { id: gameId },
     });
 
@@ -266,7 +266,7 @@ const addPlayerToGame = async (req, res) => {
       return res.status(400).json({ error: 'Game not found' });
     }
 
-    const playerGameExists = await prisma.playerGame.findFirst({
+    const playerGameExists = await prisma.sbPlayerGame.findFirst({
       where: {
         playerId: playerExists.id,
         gameId,
@@ -279,7 +279,7 @@ const addPlayerToGame = async (req, res) => {
         .json({ error: 'Player is already part of this game' });
     }
 
-    await prisma.playerGame.create({
+    await prisma.sbPlayerGame.create({
       data: {
         playerId: playerExists.id,
         gameId,
@@ -301,7 +301,7 @@ const getGame = async (req, res) => {
   }
 
   try {
-    const game = await prisma.game.findFirst({
+    const game = await prisma.sbGame.findFirst({
       where: { id: gameId },
     });
 

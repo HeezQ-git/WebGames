@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Modals = 'GAMES' | 'NEW_GAME' | 'RANKING' | 'SETTINGS' | 'DANGER' | 'HINTS' | null;
+export type Modals = 'GAMES' | 'NEW_GAME' | 'RANKING' | 'SETTINGS' | 'DANGER' | 'HINTS' | 'STATS' | null;
 
 interface ModalStore {
   openModal: Modals;

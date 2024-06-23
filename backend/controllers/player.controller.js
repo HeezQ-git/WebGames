@@ -132,7 +132,7 @@ const deletePlayerProgress = async (req, res) => {
       return res.status(400);
     }
 
-    const foundGames = await prisma.game.findMany({
+    const foundGames = await prisma.sbGame.findMany({
       where: {
         players: {
           some: {
@@ -143,14 +143,14 @@ const deletePlayerProgress = async (req, res) => {
     });
 
     for (const game of foundGames) {
-      await prisma.playerGame.deleteMany({
+      await prisma.sbPlayerGame.deleteMany({
         where: {
           playerId: player.id,
           gameId: game.id,
         },
       });
 
-      const otherPlayers = await prisma.playerGame.findMany({
+      const otherPlayers = await prisma.sbPlayerGame.findMany({
         where: {
           gameId: game.id,
           NOT: { playerId: player.id },
@@ -163,6 +163,18 @@ const deletePlayerProgress = async (req, res) => {
         });
       }
     }
+
+    await prisma.wdPlayerStats.deleteMany({
+      where: {
+        playerId: player.id,
+      },
+    });
+
+    await prisma.wdGame.deleteMany({
+      where: {
+        playerId: player.id,
+      },
+    });
 
     return res.status(200);
   } catch (error) {
@@ -191,7 +203,7 @@ const deletePlayerAccount = async (req, res, withoutResponse) => {
 
     await deletePlayerProgress(req, res);
 
-    await prisma.player.delete({
+    await prisma.player.deleteMany({
       where: {
         id: player.id,
       },

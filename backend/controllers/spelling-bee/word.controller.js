@@ -23,7 +23,7 @@ const submitWord = async (req, res) => {
       return res.status(200).json({ error: 'Word is incorrect' });
     }
 
-    const updatedGame = await prisma.game.update({
+    const updatedGame = await prisma.sbGame.update({
       where: { id: gameId },
       data: {
         enteredWords: { push: lowerCaseWord },

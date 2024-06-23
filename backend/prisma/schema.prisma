@@ -14,12 +14,13 @@ type CorrectWord {
   points    Int
 }
 
-model Word {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  word      String  @unique
-  isProfane Boolean @default(false)
-  Game      Game?   @relation(fields: [gameId], references: [id])
-  gameId    String? @db.ObjectId
+type PlayerWinStats {
+  oneGuess   Int
+  twoGuess   Int
+  threeGuess Int
+  fourGuess  Int
+  fiveGuess  Int
+  sixGuess   Int
 }
 
 model Player {
@@ -27,36 +28,12 @@ model Player {
   name           String          @unique
   password       String?
   cookie         String?         @unique
-  games          PlayerGame[]
+  games          SbPlayerGame[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   PlayerSettings PlayerSettings?
-}
-
-model Game {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  letters      String[]
-  centerLetter String
-  enteredWords String[]
-  correctWords CorrectWord[]
-  maximumScore Int
-  score        Int           @default(0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  players      PlayerGame[]
-  Word         Word[]
-}
-
-model PlayerGame {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  playerId String @db.ObjectId
-  gameId   String @db.ObjectId
-
-  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
-
-  @@unique([playerId, gameId])
-  @@index([gameId])
+  WdGame         WdGame[]
+  WdPlayerStats  WdPlayerStats[]
 }
 
 model PlayerSettings {
@@ -70,4 +47,69 @@ model PlayerSettings {
   player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@unique([playerId])
+}
+
+// Spelling Bee
+model SbGame {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  letters      String[]
+  centerLetter String
+  enteredWords String[]
+  correctWords CorrectWord[]
+  maximumScore Int
+  score        Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  players      SbPlayerGame[]
+  Word         Word[]
+}
+
+model SbPlayerGame {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  playerId String @db.ObjectId
+  gameId   String @db.ObjectId
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  game   SbGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, gameId])
+  @@index([gameId])
+}
+
+model Word {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  word      String  @unique
+  isProfane Boolean @default(false)
+  Game      SbGame? @relation(fields: [gameId], references: [id])
+  gameId    String? @db.ObjectId
+}
+
+// Wordle
+model WdGame {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  enteredWords String[]
+  wordToGuess  String
+  hasWon       Boolean  @default(false)
+  hasEnded     Boolean  @default(false)
+  playerId     String   @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  player          Player  @relation(fields: [playerId], references: [id])
+  wdPlayerStatsId String? @db.ObjectId
+
+  @@index([playerId])
+}
+
+model WdPlayerStats {
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  winStats     PlayerWinStats?
+  streak       Int?            @default(0)
+  gamesPlayed  Int?            @default(0)
+  totalGuesses Int?            @default(0)
+  playerId     String          @db.ObjectId
+
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
 }

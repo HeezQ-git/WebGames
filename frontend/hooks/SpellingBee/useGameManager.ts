@@ -27,13 +27,13 @@ export const useGameManager = () => {
 
   const getLastPlayedGame = useCallback(async () => {
     if (games?.length) {
-      const lastPlayed = localStorage.getItem('lastPlayed');
+      const lastPlayed = localStorage.getItem('sbLastPlayed');
 
       if (!currentGame && lastPlayed) {
         const foundGame = games.find((game) => game.id === lastPlayed);
 
         if (!foundGame) {
-          localStorage.removeItem('lastPlayed');
+          localStorage.removeItem('sbLastPlayed');
           setCurrentGame(games[0].id, games);
         } else {
           setCurrentGame(lastPlayed, games);

@@ -69,6 +69,12 @@ const signIn = async (req, res) => {
         },
       });
 
+      await prisma.wdPlayerStats.create({
+        data: {
+          playerId: player.id,
+        },
+      });
+
       return res.status(200).json({
         message: 'Player signed in as guest',
         playerCookie: playerId,

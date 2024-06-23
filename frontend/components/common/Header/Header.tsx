@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 'use client';
 import React from 'react';
 import styles from './Header.module.css';
@@ -33,9 +34,11 @@ const Header = () => {
     <header className={styles.header}>
       <h1 className={styles.logo}>NYT Games</h1>
       <div className={styles.rightSide}>
-        <Button variant="subtle" color="orange" size="md">
-          Games
-        </Button>
+        <Link href="/games">
+          <Button variant="subtle" color="orange" size="md">
+            Games
+          </Button>
+        </Link>
         <Menu shadow="md" width={200} withArrow>
           <Menu.Target>
             <Avatar color="orange" variant="light" component={UnstyledButton} />
@@ -62,7 +65,8 @@ const Header = () => {
             >
               Settings
             </Menu.Item>
-            {session?.data?.user?.name === 'Guest' ? (
+            {session?.data?.user?.name === 'Guest' ||
+            session?.data?.user?.name === undefined ? (
               <Tooltip
                 label="Sign in to save progress"
                 position="left"

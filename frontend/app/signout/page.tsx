@@ -4,12 +4,12 @@ import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
-const page = () => {
+const SignOut = () => {
   const { data, status } = useSession();
   const router = useRouter();
 
   const handleSignOut = async () => {
-    if (status !== 'authenticated' || !data) return router.push('/');
+    if (status !== 'authenticated' || !data) return router.push('/games');
 
     await signOut();
   };
@@ -21,4 +21,4 @@ const page = () => {
   return <Loading label="Signing out" />;
 };
 
-export default page;
+export default SignOut;

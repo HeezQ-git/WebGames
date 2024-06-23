@@ -1,0 +1,14 @@
+.winStatsBar {
+  &[data-is-current='true'] {
+    background-color: var(--wordle-green);
+    color: darken(white, 0.05);
+  }
+
+  &[data-is-current='false'] {
+    background-color: var(--mantine-color-dark-4);
+
+    @mixin light {
+      background-color: var(--mantine-color-gray-4);
+    }
+  }
+}
