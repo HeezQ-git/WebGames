@@ -1,5 +1,5 @@
 'use client';
-import { useGameManager } from '@/hooks/useGameManager';
+import { useGameManager } from '@/hooks/SpellingBee/useGameManager';
 
 const GameManager = () => {
   useGameManager();

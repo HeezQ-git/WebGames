@@ -3,12 +3,12 @@
 import React from 'react';
 import { Modal, Group, Tooltip, ActionIcon, Button, Text } from '@mantine/core';
 import { useModalStore } from '@/stores/modalStore';
-import { useGameStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 import { useGameActions } from './hooks/useGameActions';
 import GameItem from './GameItem';
 import { MdOutlineAdd, MdOutlineRefresh } from 'react-icons/md';
 import styles from './GamesModal.module.css';
-import { useRankStore } from '@/stores/rankStore';
+import { useRankStore } from '@/stores/SpellingBee/rankStore';
 import { useGlobalStore } from '@/stores/globalStore';
 
 const GamesModal: React.FC = () => {

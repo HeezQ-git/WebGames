@@ -1,13 +1,13 @@
 import { Highlight, Loader, Stack } from '@mantine/core';
 import React from 'react';
 
-const Loading = () => {
+const Loading = ({ label }: { label?: string }) => {
   return (
     <Stack align="center" justify="center" w="100%" h="100%" gap="sm">
       <Highlight
         fz="32px"
         ta="center"
-        highlight="Loading"
+        highlight={label || 'Loading'}
         highlightStyles={{
           animation: 'loadingGradient 2s ease infinite alternate',
           backgroundImage:
@@ -17,7 +17,7 @@ const Loading = () => {
           WebkitTextFillColor: 'transparent',
         }}
       >
-        Loading
+        {label || 'Loading'}
       </Highlight>
       <Loader size="xl" type="bars" />
     </Stack>

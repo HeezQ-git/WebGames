@@ -5,7 +5,7 @@ import { getToken } from 'next-auth/jwt';
 
 const authApiURL = (process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : 'http://localhost:8000/') + 'api/auth/signin';
 
-export const authOptions = (req: any, res: any) => ({
+export const authOptions = (req: any) => ({
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',

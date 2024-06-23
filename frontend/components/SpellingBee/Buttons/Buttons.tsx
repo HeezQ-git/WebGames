@@ -3,8 +3,8 @@ import React from 'react';
 import styles from './Buttons.module.css';
 import Button from '../Button/Button';
 import { FiRefreshCcw } from 'react-icons/fi';
-import { useInputStore } from '@/stores/inputStore';
-import { useGameStore } from '@/stores/gameStore';
+import { useInputStore } from '@/stores/SpellingBee/inputStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 const Buttons = () => {
   const { removeLetter, shuffleKeys, resetInput } = useInputStore();

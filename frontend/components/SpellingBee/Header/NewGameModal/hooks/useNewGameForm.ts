@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
 import toast from 'react-hot-toast';
 import { fetcher } from '@/lib/fetcher';
-import { useGameStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
@@ -49,7 +49,7 @@ export const useNewGameForm = () => {
 
       const response = await toast.promise(
         fetcher('POST', { wholeResponse: true })(
-          'api/game/create',
+          'api/spelling-bee/game/create',
           values.randomLetters
             ? { profanesAllowed: values.profanesAllowed }
             : {

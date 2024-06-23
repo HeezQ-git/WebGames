@@ -14,8 +14,8 @@ import Confetti from 'react-confetti';
 import { useViewportSize } from '@mantine/hooks';
 import InviteModal from '@/components/SpellingBee/InviteModal/InviteModal';
 import Loading from '@/components/common/Loading/Loading';
-import { useGameStore } from '@/stores/gameStore';
-import { useConfettiStore } from '@/stores/confettiStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
+import { useConfettiStore } from '@/stores/SpellingBee/confettiStore';
 import { Box, Container } from '@mantine/core';
 
 const SpellingBee = () => {

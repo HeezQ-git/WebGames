@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
-import { useRankStore } from '@/stores/rankStore';
-import { useGameStore } from '@/stores/gameStore';
+import { useRankStore } from '@/stores/SpellingBee/rankStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 export const useRanks = () => {
   const { maximumPoints } = useGameStore();

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useGameStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 export const useHintData = () => {
   const [skipFound, setSkipFound] = useState(false);

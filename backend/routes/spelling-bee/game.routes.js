@@ -6,7 +6,7 @@ const {
   getAllGames,
   getAllGameWords,
   addPlayerToGame,
-} = require('../controllers/game.controller');
+} = require('../../controllers/spelling-bee/game.controller');
 const router = express.Router();
 
 router.post('/create', createGame);

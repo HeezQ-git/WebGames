@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { fetcher } from '@/lib/fetcher';
 import { useModalStore } from '@/stores/modalStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { useGameStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 export const useDangerAction = () => {
   const { setOpenModal } = useModalStore();

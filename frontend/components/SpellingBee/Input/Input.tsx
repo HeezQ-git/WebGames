@@ -2,7 +2,7 @@
 
 import React from 'react';
 import clsx from 'clsx';
-import { useInputStore } from '@/stores/inputStore';
+import { useInputStore } from '@/stores/SpellingBee/inputStore';
 import styles from './Input.module.css';
 
 const Input: React.FC = () => {

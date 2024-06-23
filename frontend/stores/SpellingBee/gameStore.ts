@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useInputStore } from './inputStore';
 import { useConfettiStore } from './confettiStore';
 import { useRankStore } from './rankStore';
-import { useSessionStore } from './sessionStore';
+import { useSessionStore } from '../sessionStore';
 
 export type CorrectWord = {
   word: string;
@@ -112,7 +112,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         foundWords: [...get().foundWords, word.toLowerCase()],
       });
 
-      const res = await fetcher('POST', { wholeResponse: true })('api/word/submit', { gameId: currentGame, word, points: foundWord.points });
+      const res = await fetcher('POST', { wholeResponse: true })('api/spelling-bee/word/submit', { gameId: currentGame, word, points: foundWord.points });
 
       if (res?.status !== 200) {
         toast.error('Failed to submit word');

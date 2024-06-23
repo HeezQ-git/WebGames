@@ -26,7 +26,7 @@ const DangerModal = () => {
       opened={openModal === 'DANGER'}
       onClose={() => {
         setOpenModal('SETTINGS');
-        form.reset();
+        form?.reset();
       }}
       title={
         <Text fw="600">

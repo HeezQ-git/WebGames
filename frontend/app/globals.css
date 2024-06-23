@@ -24,6 +24,10 @@ a {
   --dark-red: hsl(5, 69%, 56%);
   --darkest-red: hsl(5, 69%, 52%);
 
+  --wordle-green: #538d4e;
+  --wordle-yellow: #b59f3b;
+  --wordle-gray: var(--mantine-color-dark-5);
+
   @mixin light-root {
     --golden: hsl(51, 100%, 53%);
     --darker-gold: hsl(51, 100%, 49%);

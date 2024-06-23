@@ -5,8 +5,8 @@ import dynamic from 'next/dynamic';
 import { UnstyledButton, Text } from '@mantine/core';
 import styles from './Ranking.module.css';
 import Dot from '../Dot/Dot';
-import { useRankStore } from '@/stores/rankStore';
-import { useGameStore } from '@/stores/gameStore';
+import { useRankStore } from '@/stores/SpellingBee/rankStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 import { useModalStore } from '@/stores/modalStore';
 
 const RankingModal = dynamic(

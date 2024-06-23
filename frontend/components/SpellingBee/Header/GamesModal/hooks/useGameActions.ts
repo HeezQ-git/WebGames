@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { fetcher } from '@/lib/fetcher';
-import { useGameStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 const refreshTimeLimit = 5000;
 
 export const useGameActions = () => {
   const [lastUpdatedGames, setLastUpdatedGames] = useState<Date | null>(null);
-  const { fetchGames, currentGame, resetGame } = useGameStore();
+  const { games, setGames, fetchGames, currentGame, resetGame } = useGameStore();
 
   const deleteGame = async (id: string) => {
+    setGames(games?.filter((game) => game.id !== id) || games);
+
     await toast.promise(
-      fetcher('DELETE')(`api/game/${id}`),
+      fetcher('DELETE')(`api/spelling-bee/game/${id}`),
       {
         loading: 'Deleting the game...',
         success: 'Game deleted!',

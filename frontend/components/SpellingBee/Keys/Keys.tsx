@@ -3,7 +3,7 @@ import React from 'react';
 import styles from './Keys.module.css';
 import Key from './Key/Key';
 import clsx from 'clsx';
-import { useInputStore } from '@/stores/inputStore';
+import { useInputStore } from '@/stores/SpellingBee/inputStore';
 
 const Keys = ({
   overrideKeys,

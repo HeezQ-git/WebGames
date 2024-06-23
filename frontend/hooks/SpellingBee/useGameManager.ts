@@ -1,10 +1,10 @@
 import { useEffect, useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useGlobalStore } from '@/stores/globalStore';
-import { useGameStore, Game } from '@/stores/gameStore';
-import { useRankStore } from '@/stores/rankStore';
+import { useGameStore, Game } from '@/stores/SpellingBee/gameStore';
+import { useRankStore } from '@/stores/SpellingBee/rankStore';
 import { fetcher, useFetcherSWR } from '@/lib/fetcher';
-import { useSessionManager } from './useSessionManager';
+import { useSessionManager } from '../useSessionManager';
 import { useRanks } from './useRanks';
 
 export const useGameManager = () => {
@@ -13,7 +13,7 @@ export const useGameManager = () => {
   const { points, currentGame, fetchGames, setFetchGames, setGames, setCurrentGame } = useGameStore();
   const { setRanksPoints, setCurrentRank } = useRankStore();
 
-  const { data: games, isLoading, mutate } = useFetcherSWR<Game[]>('GET', 'api/game/all', undefined, {
+  const { data: games, isLoading, mutate } = useFetcherSWR<Game[]>('GET', 'api/spelling-bee/game/all', undefined, {
     swrOptions: {
       revalidateOnReconnect: false,
       revalidateIfStale: false,
@@ -51,7 +51,7 @@ export const useGameManager = () => {
     setIsLoading(true);
 
     try {
-      const game = await fetcher('POST')('api/game/create');
+      const game = await fetcher('POST')('api/spelling-bee/game/create');
 
       if (game?.id) {
         if (retryCount < 4) {

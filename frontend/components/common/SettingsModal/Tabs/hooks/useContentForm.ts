@@ -3,7 +3,7 @@ import { useForm } from '@mantine/form';
 import toast from 'react-hot-toast';
 import { fetcher } from '@/lib/fetcher';
 import { useSessionStore } from '@/stores/sessionStore';
-import { useGameStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
 
 export const useSettingsForm = () => {
   const [loading, setLoading] = useState(false);

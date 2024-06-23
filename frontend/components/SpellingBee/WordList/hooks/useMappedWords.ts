@@ -1,8 +1,8 @@
 /* eslint-disable indent */
 import { useMemo } from 'react';
 import { Word } from '../types';
-import { useGameStore } from '@/stores/gameStore';
-import { useInputStore } from '@/stores/inputStore';
+import { useGameStore } from '@/stores/SpellingBee/gameStore';
+import { useInputStore } from '@/stores/SpellingBee/inputStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
 export const useMappedWords = (): Word[] => {

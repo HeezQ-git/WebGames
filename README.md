@@ -68,16 +68,16 @@ Open http://localhost:3000 with your browser to see the result.
 - [x]  ~Optimization, performance improvements and code refactoring~
 - [ ]  New game: *Wordle*
 
-    #### Wordle:
-      - [ ]  Basic game logic
-      - [ ]  User interface design
-      - [ ]  Saving games
-      - [ ]  Implement scoring system
-      - [ ]  Add hints or helper features
-      - [ ]  Accessibility improvements
+#### Wordle:
+  - [ ]  Basic game logic
+  - [ ]  User interface design
+  - [ ]  Saving games
+  - [ ]  Implement scoring system
+  - [ ]  Add hints or helper features
+  - [ ]  Accessibility improvements
 
-    #### Spelling Bee:
-      - [x]  ~Add ability to share game via link~
-      - [x]  ~Add hints to games~
-      - [ ]  Add different modes (easy, normal, hard)
-      - [ ]  Accessibility improvements
+#### Spelling Bee:
+  - [x]  ~Add ability to share game via link~
+  - [x]  ~Add hints to games~
+  - [ ]  Add different modes (easy, normal, hard)
+  - [ ]  Accessibility improvements

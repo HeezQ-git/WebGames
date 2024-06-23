@@ -5,9 +5,9 @@ const cookieParser = require('cookie-parser');
 const prisma = require('./lib/prisma');
 
 const authRoutes = require('./routes/auth.routes');
-const wordRoutes = require('./routes/word.routes');
-const gameRoutes = require('./routes/game.routes');
 const playerRoutes = require('./routes/player.routes');
+const sbWordRoutes = require('./routes/spelling-bee/word.routes');
+const sbGameRoutes = require('./routes/spelling-bee/game.routes');
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -76,9 +76,9 @@ app.use(async (req, res, next) => {
 dotenv.config();
 
 app.use('/api/auth', authRoutes);
-app.use('/api/word', wordRoutes);
-app.use('/api/game', gameRoutes);
 app.use('/api/player', playerRoutes);
+app.use('/api/spelling-bee/word', sbWordRoutes);
+app.use('/api/spelling-bee/game', sbGameRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);
