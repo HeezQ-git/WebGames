@@ -2,12 +2,10 @@ services:
   mongo:
     image: mongo:7
     restart: unless-stopped
-    # Prisma wymaga replica set (transakcje) - jednonodowy w zupelnosci wystarczy
     command: ['--replSet', 'rs0', '--bind_ip_all']
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      # inicjuje RS przy pierwszym starcie, potem to zwykly ping
       test:
         [
           'CMD',
