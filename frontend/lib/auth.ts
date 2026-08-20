@@ -3,8 +3,11 @@ import NextAuth from 'next-auth/next';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { getToken } from 'next-auth/jwt';
 
+// ten plik chodzi wylacznie po stronie serwera, wiec woła backend po wewnetrznej
+// sieci Dockera - publiczny FQDN nie wraca do samego siebie zza NAT-u na VPS-ie
 const authApiURL =
-  (process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.INTERNAL_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
     (process.env.NODE_ENV === 'production'
       ? 'https://web-games-backend.vercel.app/'
       : 'http://localhost:8000/')) + 'api/auth/signin';
