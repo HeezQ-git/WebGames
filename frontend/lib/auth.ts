@@ -3,7 +3,11 @@ import NextAuth from 'next-auth/next';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { getToken } from 'next-auth/jwt';
 
-const authApiURL = (process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : 'http://localhost:8000/') + 'api/auth/signin';
+const authApiURL =
+  (process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://web-games-backend.vercel.app/'
+      : 'http://localhost:8000/')) + 'api/auth/signin';
 
 export const authOptions = (req: any) => ({
   secret: process.env.NEXTAUTH_SECRET,

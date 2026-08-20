@@ -11,7 +11,7 @@ type FetcherOptions = {
   timeout?: number;
 };
 
-const defaultUrlBase = process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : "http://localhost:8000/";
+const defaultUrlBase = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : 'http://localhost:8000/');
 
 const axiosBase = async (base?: string) => {
   const session = await getSession();
@@ -21,7 +21,7 @@ const axiosBase = async (base?: string) => {
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : "http://localhost:8000/",
+      "Access-Control-Allow-Origin": defaultUrlBase,
       'Access-Control-Allow-Credentials': 'true',
       'Authorization': `${session?.user?.pid || ''}`,
     },

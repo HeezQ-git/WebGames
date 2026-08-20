@@ -17,6 +17,8 @@ const app = express();
 
 const corsOptions = {
   origin: [
+    // comma-separated list, e.g. https://games.example.com
+    ...(process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()) ?? []),
     'http://localhost:3000',
     'https://web-games-one.vercel.app/',
     'https://web-games-one.vercel.app',
