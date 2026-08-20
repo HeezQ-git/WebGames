@@ -1,32 +1,40 @@
 const bcrypt = require('bcrypt');
 const prisma = require('../lib/prisma');
-const { deletePlayerAccount } = require('./player.controller');
+const { deletePlayerByCookie } = require('./player.controller');
+const { validateUsername, validatePassword } = require('../lib/validate');
 const uuidv4 = require('uuid').v4;
 
 const signUp = async (req, res) => {
   try {
     const { username, password } = req.body;
-    let playerCookie = req.playerCookie;
 
-    if (!playerCookie) playerCookie = uuidv4();
+    const invalidUsername = validateUsername(username);
+    if (invalidUsername) {
+      return res.status(400).json({ message: invalidUsername });
+    }
+
+    const invalidPassword = validatePassword(password);
+    if (invalidPassword) {
+      return res.status(400).json({ message: invalidPassword });
+    }
+
+    const playerCookie = req.playerCookie || uuidv4();
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const foundPlayer = await prisma.player.findUnique({
-      where: {
-        cookie: playerCookie,
-      },
+      where: { cookie: playerCookie },
     });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (foundPlayer?.password) {
+      return res
+        .status(409)
+        .json({ message: 'This account is already registered' });
+    }
 
     if (foundPlayer) {
       await prisma.player.update({
-        where: {
-          id: foundPlayer.id,
-        },
-        data: {
-          name: username,
-          password: hashedPassword,
-        },
+        where: { id: foundPlayer.id },
+        data: { name: username, password: hashedPassword },
       });
     } else {
       await prisma.player.create({
@@ -42,83 +50,62 @@ const signUp = async (req, res) => {
       .status(201)
       .json({ message: 'Player signed up successfully', playerCookie });
   } catch (error) {
-    console.log(`Error in auth.controller signUp`, error.message);
-    res.status(500).json({ message: 'Internal Server Error' });
+    if (error.code === 'P2002') {
+      return res.status(409).json({ message: 'Username is already taken' });
+    }
+
+    console.error(`Error in auth.controller signUp`, error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
+};
+
+const signInAsGuest = async (res) => {
+  const playerCookie = uuidv4();
+
+  const player = await prisma.player.create({
+    data: {
+      name: `Player-${playerCookie.substring(0, 8)}`,
+      cookie: playerCookie,
+      PlayerSettings: {
+        create: { profanesAllowed: false, wordListSortBy: 'ALPHABETICAL' },
+      },
+      WdPlayerStats: { create: {} },
+    },
+    include: { PlayerSettings: true },
+  });
+
+  return res.status(200).json({
+    message: 'Player signed in as guest',
+    playerCookie,
+    settings: player.PlayerSettings,
+  });
 };
 
 const signIn = async (req, res) => {
   try {
     const { asGuest, username, password, oldPid: oldCookie } = req.body;
 
-    if (asGuest) {
-      const playerId = uuidv4();
-
-      const player = await prisma.player.create({
-        data: {
-          name: `Player-${playerId.substring(0, 8)}`,
-          cookie: playerId,
-        },
-      });
-
-      const settings = await prisma.playerSettings.create({
-        data: {
-          playerId: player.id,
-          profanesAllowed: false,
-          wordListSortBy: 'ALPHABETICAL',
-        },
-      });
-
-      await prisma.wdPlayerStats.create({
-        data: {
-          playerId: player.id,
-        },
-      });
-
-      return res.status(200).json({
-        message: 'Player signed in as guest',
-        playerCookie: playerId,
-        settings,
-      });
-    }
+    if (asGuest) return await signInAsGuest(res);
 
     const player = await prisma.player.findUnique({
-      where: {
-        name: username,
-      },
+      where: { name: typeof username === 'string' ? username : '' },
     });
 
-    if (!player) {
+    const isPasswordValid = await bcrypt.compare(
+      typeof password === 'string' ? password : '',
+      player?.password || ''
+    );
+
+    if (!player || !isPasswordValid) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const settings = await prisma.playerSettings.findUnique({
-      where: {
-        playerId: player?.id,
-      },
+      where: { playerId: player.id },
     });
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      player?.password || ''
-    );
-
-    if (!isPasswordValid || !player) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    // avoid unnecessary guest accounts
-    if (oldCookie) {
-      const foundPlayer = await prisma.player.findUnique({
-        where: {
-          cookie: oldCookie,
-        },
-      });
-
-      if (foundPlayer) {
-        req.oldCookie = oldCookie;
-        await deletePlayerAccount(req, res, true);
-      }
+    if (oldCookie && oldCookie !== player.cookie) {
+      await deletePlayerByCookie(oldCookie);
     }
 
     return res.status(200).json({
@@ -127,8 +114,8 @@ const signIn = async (req, res) => {
       settings,
     });
   } catch (error) {
-    console.log(`Error in auth.controller signIn`, error.message);
-    res.status(500);
+    console.error(`Error in auth.controller signIn`, error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -136,10 +123,12 @@ const checkUsername = async (req, res) => {
   try {
     const { username } = req.body;
 
+    if (typeof username !== 'string' || !username) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+
     const player = await prisma.player.findUnique({
-      where: {
-        name: username,
-      },
+      where: { name: username },
     });
 
     if (player) {
@@ -152,8 +141,8 @@ const checkUsername = async (req, res) => {
       .status(200)
       .json({ exists: false, message: 'Username is available' });
   } catch (error) {
-    console.log(`Error in auth.controller checkUsername`, error.message);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error(`Error in auth.controller checkUsername`, error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 

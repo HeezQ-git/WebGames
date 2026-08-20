@@ -107,9 +107,7 @@ model WdPlayerStats {
   streak       Int?            @default(0)
   gamesPlayed  Int?            @default(0)
   totalGuesses Int?            @default(0)
-  playerId     String          @db.ObjectId
+  playerId     String          @unique @db.ObjectId
 
-  player Player @relation(fields: [playerId], references: [id])
-
-  @@index([playerId])
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }

@@ -4,67 +4,51 @@ const {
 } = require('../../lib/getWords');
 const prisma = require('../../lib/prisma');
 
-const createGameAndReturn = async (playerCookie) => {
+const MAX_GUESSES = 6;
+
+const findPlayerId = async (playerCookie) => {
   const player = await prisma.player.findUnique({
     where: { cookie: playerCookie },
-    select: {
-      id: true,
-    },
+    select: { id: true },
   });
 
-  const settings = await prisma.playerSettings.findFirst({
-    where: {
-      playerId: player.id,
-    },
-    select: {
-      profanesAllowed: true,
-    },
+  return player?.id || null;
+};
+
+const findCurrentGame = (playerId) =>
+  prisma.wdGame.findFirst({
+    where: { playerId },
+    orderBy: { createdAt: 'desc' },
   });
 
-  const wordList = getWordsFromJSON();
-  if (settings?.profanesAllowed) wordList.concat(getProfaneWordsFromJSON());
+const createGameAndReturn = async (playerId) => {
+  const settings = await prisma.playerSettings.findUnique({
+    where: { playerId },
+    select: { profanesAllowed: true },
+  });
+
+  const wordList = settings?.profanesAllowed
+    ? [...getWordsFromJSON(), ...getProfaneWordsFromJSON()]
+    : getWordsFromJSON();
 
   const wordToGuess = wordList[Math.floor(Math.random() * wordList.length)];
 
-  const newGame = await prisma.wdGame.create({
-    data: {
-      wordToGuess: wordToGuess,
-      player: {
-        connect: {
-          id: player.id,
-        },
-      },
-    },
+  return prisma.wdGame.create({
+    data: { wordToGuess, player: { connect: { id: playerId } } },
   });
-
-  return newGame;
 };
 
 const createNewGame = async (req, res) => {
-  const playerCookie = req.playerCookie;
-
   try {
-    const player = await prisma.player.findUnique({
-      where: { cookie: playerCookie },
-      select: {
-        id: true,
-      },
-    });
+    const playerId = await findPlayerId(req.playerCookie);
 
-    const game = await prisma.wdGame.findFirst({
-      where: {
-        playerId: player.id,
-      },
-    });
+    if (!playerId) {
+      return res.status(400).json({ message: 'Player not found' });
+    }
 
-    if (game)
-      await prisma.wdGame.delete({
-        where: {
-          id: game.id,
-        },
-      });
+    await prisma.wdGame.deleteMany({ where: { playerId } });
 
-    const newGame = await createGameAndReturn(playerCookie);
+    const newGame = await createGameAndReturn(playerId);
 
     return res
       .status(200)
@@ -76,34 +60,23 @@ const createNewGame = async (req, res) => {
 };
 
 const getOrCreateGame = async (req, res) => {
-  const playerCookie = req.playerCookie;
-
   try {
-    const player = await prisma.player.findUnique({
-      where: { cookie: playerCookie },
-      select: {
-        id: true,
-      },
-    });
+    const playerId = await findPlayerId(req.playerCookie);
 
-    const game = await prisma.wdGame.findFirst({
-      where: {
-        playerId: player.id,
-      },
-    });
-
-    if (!game) {
-      const newGame = await createGameAndReturn(playerCookie);
-
-      return res.status(200).json({
-        gameId: newGame.id,
-        wordToGuess: newGame.wordToGuess,
-        hasWon: newGame.hasWon,
-        hasEnded: newGame.hasEnded,
-      });
+    if (!playerId) {
+      return res.status(400).json({ message: 'Player not found' });
     }
 
-    return res.status(200).json(game);
+    const game = (await findCurrentGame(playerId)) ||
+      (await createGameAndReturn(playerId));
+
+    return res.status(200).json({
+      gameId: game.id,
+      wordToGuess: game.wordToGuess,
+      enteredWords: game.enteredWords,
+      hasWon: game.hasWon,
+      hasEnded: game.hasEnded,
+    });
   } catch (error) {
     console.error(`Error in game.controller getOrCreateGame:`, error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -112,108 +85,50 @@ const getOrCreateGame = async (req, res) => {
 
 const updateStats = async (req, res) => {
   const { guesses, hasLost } = req.body;
-  const playerCookie = req.playerCookie;
+
+  if (!Number.isInteger(guesses) || guesses < 1 || guesses > MAX_GUESSES) {
+    return res.status(400).json({ message: 'Invalid number of guesses' });
+  }
 
   try {
-    const player = await prisma.player.findUnique({
-      where: { cookie: playerCookie },
-      select: {
-        id: true,
-      },
+    const playerId = await findPlayerId(req.playerCookie);
+
+    if (!playerId) {
+      return res.status(400).json({ message: 'Player not found' });
+    }
+
+    const playerStats = await prisma.wdPlayerStats.upsert({
+      where: { playerId },
+      update: {},
+      create: { playerId },
     });
 
-    let playerStats = await prisma.wdPlayerStats.findFirst({
-      where: {
-        playerId: player.id,
-      },
-    });
+    const game = await findCurrentGame(playerId);
 
-    if (hasLost) {
-      const updatedStats = await prisma.wdPlayerStats.update({
-        where: { id: playerStats.id, playerId: player.id },
-        data: {
+    const data = hasLost
+      ? {
           totalGuesses: { increment: guesses },
           gamesPlayed: { increment: 1 },
           streak: 0,
-        },
-      });
-
-      await prisma.wdGame.updateMany({
-        where: {
-          playerId: player.id,
-        },
-        data: {
-          hasWon: false,
-          hasEnded: true,
-        },
-      });
-
-      return res.status(200).json(updatedStats);
-    }
-
-    let winStats = {
-      oneGuess: 0,
-      twoGuess: 0,
-      threeGuess: 0,
-      fourGuess: 0,
-      fiveGuess: 0,
-      sixGuess: 0,
-    };
-
-    if (!playerStats) {
-      playerStats = await prisma.wdPlayerStats.create({
-        data: {
-          playerId: player.id,
-        },
-      });
-
-      if (playerStats.winStats) winStats = foundStats.winStats;
-    } else if (playerStats.winStats) {
-      winStats = playerStats.winStats;
-    }
-
-    switch (guesses) {
-      case 1:
-        winStats.oneGuess += 1;
-        break;
-      case 2:
-        winStats.twoGuess += 1;
-        break;
-      case 3:
-        winStats.threeGuess += 1;
-        break;
-      case 4:
-        winStats.fourGuess += 1;
-        break;
-      case 5:
-        winStats.fiveGuess += 1;
-        break;
-      case 6:
-        winStats.sixGuess += 1;
-        break;
-      default:
-        break;
-    }
+        }
+      : {
+          winStats: bumpWinStats(playerStats.winStats, guesses),
+          totalGuesses: { increment: guesses },
+          gamesPlayed: { increment: 1 },
+          streak: (playerStats.streak || 0) + 1,
+        };
 
     const updatedStats = await prisma.wdPlayerStats.update({
-      where: { id: playerStats.id, playerId: player.id },
-      data: {
-        winStats: winStats,
-        totalGuesses: { increment: guesses },
-        gamesPlayed: { increment: 1 },
-        streak: (playerStats.streak || 0) + 1,
-      },
+      where: { id: playerStats.id },
+      data,
     });
 
-    await prisma.wdGame.updateMany({
-      where: {
-        playerId: player.id,
-      },
-      data: {
-        hasWon: true,
-        hasEnded: true,
-      },
-    });
+    if (game) {
+      await prisma.wdGame.update({
+        where: { id: game.id },
+        data: { hasWon: !hasLost, hasEnded: true },
+      });
+    }
 
     return res.status(200).json(updatedStats);
   } catch (error) {
@@ -222,21 +137,38 @@ const updateStats = async (req, res) => {
   }
 };
 
+const GUESS_KEYS = [
+  'oneGuess',
+  'twoGuess',
+  'threeGuess',
+  'fourGuess',
+  'fiveGuess',
+  'sixGuess',
+];
+
+function bumpWinStats(current, guesses) {
+  const winStats = GUESS_KEYS.reduce(
+    (stats, key) => ({ ...stats, [key]: current?.[key] || 0 }),
+    {}
+  );
+
+  winStats[GUESS_KEYS[guesses - 1]] += 1;
+
+  return winStats;
+}
+
 const getStats = async (req, res) => {
-  const playerCookie = req.playerCookie;
-
   try {
-    const player = await prisma.player.findUnique({
-      where: { cookie: playerCookie },
-      select: {
-        id: true,
-      },
-    });
+    const playerId = await findPlayerId(req.playerCookie);
 
-    const playerStats = await prisma.wdPlayerStats.findFirst({
-      where: {
-        playerId: player.id,
-      },
+    if (!playerId) {
+      return res.status(400).json({ message: 'Player not found' });
+    }
+
+    const playerStats = await prisma.wdPlayerStats.upsert({
+      where: { playerId },
+      update: {},
+      create: { playerId },
     });
 
     return res.status(200).json(playerStats);

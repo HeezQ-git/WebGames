@@ -1,12 +1,20 @@
-function generateLettersRegexPattern(letters, centerLetter) {
-  const lettersSet = new Set(letters);
-  const lettersPattern = Array.from(lettersSet).join('');
+const MIN_WORD_LENGTH = 4;
 
-  const pattern = new RegExp(
-    `^[${lettersPattern}]*${centerLetter}[${lettersPattern}]*$`,
+function generateLettersRegexPattern(letters, centerLetter) {
+  const lettersPattern = Array.from(new Set(letters))
+    .join('')
+    .replace(/[^a-zA-Z]/g, '');
+  const center = String(centerLetter).replace(/[^a-zA-Z]/g, '');
+
+  if (!lettersPattern || !center) {
+    throw new Error('Invalid letters for pattern generation');
+  }
+
+  return new RegExp(
+    `^(?=.{${MIN_WORD_LENGTH},}$)[${lettersPattern}]*${center}[${lettersPattern}]*$`,
     'i'
   );
-  return pattern;
 }
 
 module.exports = generateLettersRegexPattern;
+module.exports.MIN_WORD_LENGTH = MIN_WORD_LENGTH;
