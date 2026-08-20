@@ -7,6 +7,8 @@ import { fetcher, useFetcherSWR } from '@/lib/fetcher';
 import { useRanks } from './useRanks';
 import { useSessionStore } from '@/stores/sessionStore';
 
+const MAX_CREATE_ATTEMPTS = 4;
+
 export const useGameManager = () => {
   const [retryCount, setRetryCount] = useState(0);
   const { isLoading: globalIsLoading, setIsLoading } = useGlobalStore();
@@ -48,31 +50,25 @@ export const useGameManager = () => {
   }, [currentGame, games, setCurrentGame, setIsLoading, mutate]);
 
   const createNewGame = useCallback(async () => {
+    if (retryCount >= MAX_CREATE_ATTEMPTS) return;
+    setRetryCount((prev) => prev + 1);
+
     const toastId = toast.loading('Creating a new game...');
     setIsLoading(true);
 
     try {
       const game = await fetcher('POST')('api/spelling-bee/game/create');
 
-      if (game?.id) {
-        if (retryCount < 4) {
-          await mutate();
-          setCurrentGame(game.id);
-          toast.success('Game created!', { id: toastId });
-          setRetryCount((prev) => prev + 1);
-        }
-      } else {
-        throw new Error('Failed to create a new game');
-      }
+      if (!game?.id) throw new Error('Failed to create a new game');
+
+      await mutate();
+      setCurrentGame(game.id);
+      toast.success('Game created!', { id: toastId });
     } catch (error) {
-      toast.dismiss();
-      toast.error('Failed to create a new game', {
-        id: toastId,
-      });
+      toast.error('Failed to create a new game', { id: toastId });
+    } finally {
       setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, [mutate, retryCount, setCurrentGame, setIsLoading]);
 
   const manageGames = useCallback(async () => {

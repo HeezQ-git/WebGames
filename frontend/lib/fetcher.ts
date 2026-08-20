@@ -21,8 +21,6 @@ const axiosBase = async (base?: string) => {
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": defaultUrlBase,
-      'Access-Control-Allow-Credentials': 'true',
       'Authorization': `${session?.user?.pid || ''}`,
     },
   });

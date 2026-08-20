@@ -4,7 +4,8 @@ import { useGameStore } from '@/stores/SpellingBee/gameStore';
 export const useHintData = () => {
   const [skipFound, setSkipFound] = useState(false);
   const { games, currentGame, foundWords } = useGameStore();
-  const wordlist = games?.find((game) => game.id === currentGame)?.correctWords;
+  const game = games?.find((entry) => entry.id === currentGame);
+  const wordlist = game?.correctWords;
 
   const getTally = (amountOfLetters: number) =>
     wordlist
@@ -44,8 +45,15 @@ export const useHintData = () => {
     (word) => !foundWords.includes(word?.word)
   );
 
-  const bingo = !Object.values(letterDistribution).some(
-    (amount) => amount === 0
+  const startingLetters = new Set(
+    wordlist?.map((word) => word?.word?.[0]?.toLocaleUpperCase())
+  );
+
+  const bingo = Boolean(
+    game?.letters?.length &&
+      game.letters.every((letter) =>
+        startingLetters.has(letter.toLocaleUpperCase())
+      )
   );
 
   return {
