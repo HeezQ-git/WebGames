@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { fetcher } from '@/lib/fetcher';
 import toast from 'react-hot-toast';
-import { useInputStore } from './inputStore';
+import { MAX_INPUT_LENGTH, useInputStore } from './inputStore';
 import { useConfettiStore } from './confettiStore';
 import { useRankStore } from './rankStore';
 import { useSessionStore } from '../sessionStore';
@@ -49,7 +49,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (foundGame) {
       localStorage.setItem('lastPlayed', currentGame);
       set({ currentGame });
-      useInputStore.setState({ keys: foundGame?.letters, centerLetter: foundGame?.centerLetter });
+      useInputStore.setState({ keys: [...(foundGame?.letters || [])], centerLetter: foundGame?.centerLetter });
       set({ foundWords: foundGame?.enteredWords, points: foundGame?.score, maximumPoints: foundGame?.maximumScore });
     }
   },
@@ -80,7 +80,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const word = inputStore.input.join('');
 
     if (word.length < 4) return toast.error('Too short!');
-    else if (word.length > 19) return toast.error('Too long!');
+    else if (word.length > MAX_INPUT_LENGTH) return toast.error('Too long!');
 
     for (const letter of word) {
       if (!inputStore.keys.includes(letter)) return toast.error('Bad letters!');
