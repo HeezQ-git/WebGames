@@ -1,35 +1,31 @@
 const fs = require('fs');
 const path = require('path');
 
-const getWordsFromJSON = () => {
-  try {
-    const words = fs.readFileSync(
-      path.join(__dirname, 'no_profane.json'),
-      'utf-8'
-    );
+const cache = new Map();
 
-    return JSON.parse(words);
-  } catch (error) {
-    console.error(`Error in word.controller getWords:`, error.message);
-    return { message: 'Internal Server Error' };
+const readList = (file) => {
+  if (!cache.has(file)) {
+    const contents = fs.readFileSync(path.join(__dirname, file), 'utf-8');
+    cache.set(file, Object.freeze(JSON.parse(contents)));
   }
+
+  return cache.get(file);
 };
 
-const getProfaneWordsFromJSON = () => {
-  try {
-    const words = fs.readFileSync(
-      path.join(__dirname, 'profane.json'),
-      'utf-8'
-    );
+const getWordsFromJSON = () => readList('no_profane.json');
+const getProfaneWordsFromJSON = () => readList('profane.json');
 
-    return JSON.parse(words);
-  } catch (error) {
-    console.error(`Error in word.controller getProfaneWords:`, error.message);
-    return { message: 'Internal Server Error' };
+let allowedWords = null;
+
+const isAllowedWord = (word) => {
+  if (!allowedWords) {
+    allowedWords = new Set([
+      ...getWordsFromJSON(),
+      ...getProfaneWordsFromJSON(),
+    ]);
   }
+
+  return allowedWords.has(word);
 };
 
-module.exports = {
-  getWordsFromJSON,
-  getProfaneWordsFromJSON,
-};
+module.exports = { getWordsFromJSON, getProfaneWordsFromJSON, isAllowedWord };

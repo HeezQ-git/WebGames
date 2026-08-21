@@ -122,18 +122,52 @@ const guest = async () =>
     { oldPassword: 'x', newPassword: 'GoodPass1' }, g);
   check('guest without password -> 400 not 500', noPass.status === 400, JSON.stringify(noPass));
 
-  console.log('\n[wordle]');
+  console.log('\n[wordle is decided by the server]');
   const h = await guest();
-  const wd = await call('GET', '/api/wordle/game', null, h);
-  check('wordle game has enteredWords', Array.isArray(wd.data.enteredWords), JSON.stringify(wd.data));
   await call('DELETE', '/api/player/progress', null, h);
-  const lost = await call('PATCH', '/api/wordle/game/stats', { guesses: 6, hasLost: true }, h);
-  check('losing after a progress reset -> 200 not 500', lost.status === 200, JSON.stringify(lost));
-  const won = await call('PATCH', '/api/wordle/game/stats', { guesses: 3 }, h);
-  check('win recorded in winStats', won.data.winStats?.threeGuess === 1, JSON.stringify(won.data.winStats));
-  check('streak incremented', won.data.streak === 1, JSON.stringify(won.data.streak));
-  const cheat = await call('PATCH', '/api/wordle/game/stats', { guesses: 99999 }, h);
-  check('absurd guess count -> 400', cheat.status === 400, JSON.stringify(cheat));
+
+  const wd = await call('GET', '/api/wordle/game', null, h);
+  check('game survives a progress reset', wd.status === 200, JSON.stringify(wd));
+  check('answer hidden while the game runs', wd.data.wordToGuess === undefined, JSON.stringify(wd.data));
+  check('results array returned', Array.isArray(wd.data.results));
+
+  const gone = await call('PATCH', '/api/wordle/game/stats', { guesses: 1 }, h);
+  check('self-reported stats endpoint removed', gone.status === 404, JSON.stringify(gone));
+
+  const unknownWord = await call('POST', '/api/wordle/word/submit', { word: 'zzzzz' }, h);
+  check('word outside the list -> 400', unknownWord.status === 400, JSON.stringify(unknownWord));
+  const shortWord = await call('POST', '/api/wordle/word/submit', { word: 'abc' }, h);
+  check('wrong length -> 400', shortWord.status === 400);
+
+  const wordList = (await call('GET', '/api/wordle/word/list', null, h)).data;
+  const guessed = await call('POST', '/api/wordle/word/submit', { word: wordList[0] }, h);
+  check('server evaluates the guess', guessed.data.results?.[0]?.length === 5, JSON.stringify(guessed.data.results));
+  check('spots are valid values',
+    guessed.data.results[0].every((spot) => ['CORRECT', 'PRESENT', 'NOT_IN_WORD'].includes(spot)));
+
+  const midStats = (await call('GET', '/api/wordle/game/stats', null, h)).data;
+  check('unfinished game does not count', midStats.gamesPlayed === 0, JSON.stringify(midStats));
+
+  let ended = null;
+  for (const candidate of wordList) {
+    const attempt = await call('POST', '/api/wordle/word/submit', { word: candidate }, h);
+    if (attempt.data?.hasEnded) { ended = attempt.data; break; }
+  }
+  check('game ends within six guesses', ended !== null);
+  check('answer revealed once the game ends', typeof ended?.wordToGuess === 'string', JSON.stringify(ended));
+  check('win flag matches the board',
+    ended.hasWon === ended.results[ended.results.length - 1].every((s) => s === 'CORRECT'),
+    JSON.stringify({ hasWon: ended.hasWon, last: ended.results[ended.results.length - 1] }));
+
+  const afterEnd = await call('POST', '/api/wordle/word/submit', { word: wordList[0] }, h);
+  check('submitting into a finished game -> 400', afterEnd.status === 400, JSON.stringify(afterEnd));
+
+  const finalStats = (await call('GET', '/api/wordle/game/stats', null, h)).data;
+  check('finished game counted exactly once', finalStats.gamesPlayed === 1, JSON.stringify(finalStats));
+
+  const restarted = await call('POST', '/api/wordle/game', null, h);
+  check('new game starts empty', restarted.data.enteredWords.length === 0 && !restarted.data.hasEnded, JSON.stringify(restarted.data));
+  check('new game hides its answer', restarted.data.wordToGuess === undefined);
   }
 
   {
@@ -149,7 +183,8 @@ const guest = async () =>
   check('login returns settings', !!login.data.settings, JSON.stringify(login.data.settings));
 
   const orphan = await call('GET', '/api/wordle/game/stats', null, throwaway);
-  check('throwaway guest was cleaned up', orphan.status === 200);
+  check('throwaway guest was deleted', orphan.status === 403, JSON.stringify(orphan));
+  check('its token is reported as invalid', orphan.data.code === 'INVALID_SESSION', JSON.stringify(orphan.data));
 
   console.log('\n[login edge cases]');
   const wrong = await call('POST', '/api/auth/signin', { username: name, password: 'WrongPass1' });
@@ -184,6 +219,70 @@ const guest = async () =>
   const w = g.data.correctWords[0];
   const sub = await call('POST', '/api/spelling-bee/word/submit', { gameId: g.data.id, word: w.word }, friend);
   check('friend can now submit words', sub.data.newScore === w.points, JSON.stringify(sub.data));
+  }
+
+  {
+    console.log('\n[bearer tokens are signed]');
+    const token = await guest();
+    check('signin returns a signed token', token.includes('.'), token);
+
+    const bare = token.split('.')[0];
+    const garbage = await call('GET', '/api/spelling-bee/game/all', null, 'totally-made-up-token');
+    check('made-up token -> 403', garbage.status === 403, JSON.stringify(garbage));
+    check('403 carries a recoverable code', garbage.data.code === 'INVALID_SESSION', JSON.stringify(garbage.data));
+
+    const tampered = await call('GET', '/api/spelling-bee/game/all', null, bare + '.deadbeef');
+    check('tampered signature -> 403', tampered.status === 403, JSON.stringify(tampered));
+
+    const unknownUuid = '00000000-1111-4222-8333-444444444444';
+    const unknown = await call('GET', '/api/spelling-bee/game/all', null, unknownUuid);
+    check('unknown uuid -> 403 instead of creating an account', unknown.status === 403, JSON.stringify(unknown));
+
+    const legacy = await call('GET', '/api/spelling-bee/game/all', null, bare);
+    check('legacy unsigned token of a real player still works', legacy.status === 200, JSON.stringify(legacy));
+
+    const signed = await call('GET', '/api/spelling-bee/game/all', null, token);
+    check('signed token works', signed.status === 200);
+  }
+
+  {
+    console.log('\n[oldPid cannot delete a stranger]');
+    const victimToken = await guest();
+    const victimCookie = victimToken.split('.')[0];
+    const name = 'vic' + Math.floor(Date.now() % 1000000);
+    await call('POST', '/api/auth/signup', { username: name, password: 'GoodPass1' }, await guest());
+
+    const attack = await call('POST', '/api/auth/signin', {
+      username: name,
+      password: 'GoodPass1',
+      oldPid: victimCookie,
+    });
+    check('login with an unsigned stranger id -> 200', attack.status === 200, JSON.stringify(attack));
+
+    const victimStillWorks = await call('GET', '/api/spelling-bee/game/all', null, victimToken);
+    check('victim account was not deleted', victimStillWorks.status === 200, JSON.stringify(victimStillWorks));
+  }
+
+  {
+    console.log('\n[rate limiter]');
+    const rateLimit = require('./lib/rateLimit');
+    const limiter = rateLimit({ windowMs: 500, max: 3 });
+    const run = (ip) =>
+      new Promise((resolve) => {
+        const res = {
+          set() { return this; },
+          status(code) { this.code = code; return this; },
+          json() { resolve(this.code); },
+        };
+        limiter({ ip }, res, () => resolve(200));
+      });
+
+    const codes = [];
+    for (let i = 0; i < 5; i++) codes.push(await run('10.0.0.1'));
+    check('blocks past the limit', JSON.stringify(codes) === '[200,200,200,429,429]', codes.join(','));
+    check('other clients unaffected', (await run('10.0.0.2')) === 200);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    check('window resets', (await run('10.0.0.1')) === 200);
   }
 
   {

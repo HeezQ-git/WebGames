@@ -1,17 +1,10 @@
-import { useFetcherSWR } from "@/lib/fetcher";
-import { Stats, useGameStore } from "@/stores/Wordle/gameStore";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
-
-type Game = {
-  wordToGuess: string;
-  enteredWords: string[];
-  hasWon?: boolean;
-  hasEnded?: boolean;
-}
+import { useFetcherSWR } from '@/lib/fetcher';
+import { GameState, Stats, useGameStore } from '@/stores/Wordle/gameStore';
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export const useGameManager = () => {
-  const { data: game, isLoading: gameIsLoading } = useFetcherSWR<Game>(
+  const { data: game, isLoading: gameIsLoading } = useFetcherSWR<GameState>(
     'GET',
     'api/wordle/game',
     undefined,
@@ -20,7 +13,7 @@ export const useGameManager = () => {
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         keepPreviousData: true,
-      }
+      },
     }
   );
 
@@ -33,20 +26,19 @@ export const useGameManager = () => {
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         keepPreviousData: true,
-      }
+      },
     }
   );
 
   useEffect(() => {
-    if (!gameIsLoading && !statsLoading) {
-      useGameStore.setState({
-        wordToGuess: game?.wordToGuess!,
-        enteredWords: game?.enteredWords || [],
-        hasWon: game?.hasWon || false,
-        hasEnded: game?.hasEnded || false,
-        stats: stats,
-      });
-      toast.dismiss('game-loading');
-    } else toast.loading('Loading game...', { id: 'game-loading' });
+    if (gameIsLoading || statsLoading) {
+      toast.loading('Loading game...', { id: 'game-loading' });
+      return;
+    }
+
+    if (game) useGameStore.getState().applyGameState({ ...game, stats });
+    else if (stats) useGameStore.setState({ stats });
+
+    toast.dismiss('game-loading');
   }, [game, gameIsLoading, stats, statsLoading]);
-}
+};

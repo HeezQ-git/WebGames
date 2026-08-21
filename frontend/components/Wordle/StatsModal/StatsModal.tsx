@@ -8,11 +8,10 @@ import { MdOutlineCreate, MdOutlineShare } from 'react-icons/md';
 import StatBox from './components/StatBox';
 import WinStatsBar from './components/WinStatsBar';
 import { fetcher } from '@/lib/fetcher';
-import { getSpotValues } from '@/lib/Wordle/spotFunctions';
 
 const StatsModal = () => {
   const { openModal, setOpenModal } = useModalStore();
-  const { hasWon, stats, enteredWords, wordToGuess } = useGameStore();
+  const { hasWon, stats, enteredWords, results, applyGameState } = useGameStore();
   const { resetInput } = useInputStore();
 
   const allWinsCount = useMemo(
@@ -32,14 +31,13 @@ const StatsModal = () => {
   const guessesAmount = enteredWords.length;
 
   const shareGame = useCallback(() => {
-    const answersBoard = enteredWords.map((word) => {
-      const spots = getSpotValues(word, wordToGuess);
-      return spots.map((spot) => {
+    const answersBoard = results.map((spots) =>
+      spots.map((spot) => {
         if (spot === 'CORRECT') return '🟩';
         if (spot === 'PRESENT') return '🟨';
         return '⬛';
-      });
-    });
+      })
+    );
 
     const text = hasWon
       ? `I won Wordle in ${guessesAmount}/6 guesses! 🎉`
@@ -53,7 +51,7 @@ const StatsModal = () => {
       icon: '📋',
       position: 'top-right',
     });
-  }, [enteredWords, wordToGuess, guessesAmount, hasWon]);
+  }, [results, guessesAmount, hasWon]);
 
   const createNewGame = useCallback(async () => {
     toast.loading('Creating new game...', {
@@ -61,27 +59,25 @@ const StatsModal = () => {
       position: 'top-right',
     });
 
-    const response = await fetcher('POST')('api/wordle/game');
+    try {
+      const response = await fetcher('POST')('api/wordle/game');
 
-    if (response?.wordToGuess) {
       setOpenModal(null);
+      applyGameState(response);
+      resetInput();
 
       toast.success('New game created!', {
         id: 'new-game',
         icon: '🎮',
         position: 'top-right',
       });
-
-      useGameStore.setState({
-        wordToGuess: response.wordToGuess,
-        enteredWords: [],
-        hasWon: false,
-        hasEnded: false,
+    } catch (error) {
+      toast.error('Failed to create a new game', {
+        id: 'new-game',
+        position: 'top-right',
       });
-
-      resetInput();
     }
-  }, [setOpenModal, resetInput]);
+  }, [setOpenModal, resetInput, applyGameState]);
 
   const guessMapping = useMemo(
     () => ({

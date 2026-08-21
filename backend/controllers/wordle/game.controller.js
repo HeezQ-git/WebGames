@@ -1,7 +1,5 @@
-const {
-  getWordsFromJSON,
-  getProfaneWordsFromJSON,
-} = require('../../lib/getWords');
+const { getWordsFromJSON, getProfaneWordsFromJSON } = require('../../lib/getWords');
+const { getSpotValues } = require('../../lib/spotValues');
 const prisma = require('../../lib/prisma');
 
 const MAX_GUESSES = 6;
@@ -21,7 +19,18 @@ const findCurrentGame = (playerId) =>
     orderBy: { createdAt: 'desc' },
   });
 
-const createGameAndReturn = async (playerId) => {
+const presentGame = (game) => ({
+  gameId: game.id,
+  enteredWords: game.enteredWords,
+  results: game.enteredWords.map((word) =>
+    getSpotValues(word, game.wordToGuess)
+  ),
+  hasWon: game.hasWon,
+  hasEnded: game.hasEnded,
+  wordToGuess: game.hasEnded ? game.wordToGuess : undefined,
+});
+
+const createGameForPlayer = async (playerId) => {
   const settings = await prisma.playerSettings.findUnique({
     where: { playerId },
     select: { profanesAllowed: true },
@@ -48,11 +57,7 @@ const createNewGame = async (req, res) => {
 
     await prisma.wdGame.deleteMany({ where: { playerId } });
 
-    const newGame = await createGameAndReturn(playerId);
-
-    return res
-      .status(200)
-      .json({ gameId: newGame.id, wordToGuess: newGame.wordToGuess });
+    return res.status(200).json(presentGame(await createGameForPlayer(playerId)));
   } catch (error) {
     console.error(`Error in game.controller createNewGame:`, error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -67,95 +72,15 @@ const getOrCreateGame = async (req, res) => {
       return res.status(400).json({ message: 'Player not found' });
     }
 
-    const game = (await findCurrentGame(playerId)) ||
-      (await createGameAndReturn(playerId));
+    const game =
+      (await findCurrentGame(playerId)) || (await createGameForPlayer(playerId));
 
-    return res.status(200).json({
-      gameId: game.id,
-      wordToGuess: game.wordToGuess,
-      enteredWords: game.enteredWords,
-      hasWon: game.hasWon,
-      hasEnded: game.hasEnded,
-    });
+    return res.status(200).json(presentGame(game));
   } catch (error) {
     console.error(`Error in game.controller getOrCreateGame:`, error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-
-const updateStats = async (req, res) => {
-  const { guesses, hasLost } = req.body;
-
-  if (!Number.isInteger(guesses) || guesses < 1 || guesses > MAX_GUESSES) {
-    return res.status(400).json({ message: 'Invalid number of guesses' });
-  }
-
-  try {
-    const playerId = await findPlayerId(req.playerCookie);
-
-    if (!playerId) {
-      return res.status(400).json({ message: 'Player not found' });
-    }
-
-    const playerStats = await prisma.wdPlayerStats.upsert({
-      where: { playerId },
-      update: {},
-      create: { playerId },
-    });
-
-    const game = await findCurrentGame(playerId);
-
-    const data = hasLost
-      ? {
-          totalGuesses: { increment: guesses },
-          gamesPlayed: { increment: 1 },
-          streak: 0,
-        }
-      : {
-          winStats: bumpWinStats(playerStats.winStats, guesses),
-          totalGuesses: { increment: guesses },
-          gamesPlayed: { increment: 1 },
-          streak: (playerStats.streak || 0) + 1,
-        };
-
-    const updatedStats = await prisma.wdPlayerStats.update({
-      where: { id: playerStats.id },
-      data,
-    });
-
-    if (game) {
-      await prisma.wdGame.update({
-        where: { id: game.id },
-        data: { hasWon: !hasLost, hasEnded: true },
-      });
-    }
-
-    return res.status(200).json(updatedStats);
-  } catch (error) {
-    console.error(`Error in game.controller updateStats:`, error.message);
-    return res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
-
-const GUESS_KEYS = [
-  'oneGuess',
-  'twoGuess',
-  'threeGuess',
-  'fourGuess',
-  'fiveGuess',
-  'sixGuess',
-];
-
-function bumpWinStats(current, guesses) {
-  const winStats = GUESS_KEYS.reduce(
-    (stats, key) => ({ ...stats, [key]: current?.[key] || 0 }),
-    {}
-  );
-
-  winStats[GUESS_KEYS[guesses - 1]] += 1;
-
-  return winStats;
-}
 
 const getStats = async (req, res) => {
   try {
@@ -165,13 +90,13 @@ const getStats = async (req, res) => {
       return res.status(400).json({ message: 'Player not found' });
     }
 
-    const playerStats = await prisma.wdPlayerStats.upsert({
+    const stats = await prisma.wdPlayerStats.upsert({
       where: { playerId },
       update: {},
       create: { playerId },
     });
 
-    return res.status(200).json(playerStats);
+    return res.status(200).json(stats);
   } catch (error) {
     console.error(`Error in game.controller getStats:`, error.message);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -181,6 +106,9 @@ const getStats = async (req, res) => {
 module.exports = {
   createNewGame,
   getOrCreateGame,
-  updateStats,
   getStats,
+  findPlayerId,
+  findCurrentGame,
+  presentGame,
+  MAX_GUESSES,
 };
