@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const prisma = require('./lib/prisma');
+const { verifyToken, isLegacyToken } = require('./lib/token');
 
 const authRoutes = require('./routes/auth.routes');
 const playerRoutes = require('./routes/player.routes');
@@ -17,6 +18,8 @@ const PUBLIC_PATHS = ['/api/auth/signin'];
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 const allowedOrigins = [
   ...(process.env.CORS_ORIGINS?.split(',') ?? []),
   'http://localhost:3000',
@@ -28,47 +31,27 @@ app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const createPlayer = (playerCookie) =>
-  prisma.player.create({
-    data: {
-      name: `Player-${playerCookie.substring(0, 8)}`,
-      cookie: playerCookie,
-      PlayerSettings: {
-        create: { profanesAllowed: false, wordListSortBy: 'ALPHABETICAL' },
-      },
-      WdPlayerStats: { create: {} },
-    },
-  });
+const invalidSession = (res, message) =>
+  res.status(403).json({ code: 'INVALID_SESSION', message });
 
 app.use(async (req, res, next) => {
   if (PUBLIC_PATHS.includes(req.path)) return next();
 
-  const playerCookie = req.headers?.authorization;
+  const token = req.headers?.authorization;
+  const playerCookie = verifyToken(token) || (isLegacyToken(token) ? token : null);
 
   if (!playerCookie) {
-    return res
-      .status(403)
-      .json({ message: 'Player ID not found. Please sign in to continue' });
+    return invalidSession(res, 'Please sign in to continue');
   }
 
   try {
-    let player = await prisma.player.findUnique({
+    const player = await prisma.player.findUnique({
       where: { cookie: playerCookie },
+      select: { id: true },
     });
 
     if (!player) {
-      try {
-        player = await createPlayer(playerCookie);
-      } catch (error) {
-        if (error.code !== 'P2002') throw error;
-        player = await prisma.player.findUnique({
-          where: { cookie: playerCookie },
-        });
-      }
-    }
-
-    if (!player) {
-      return res.status(403).json({ message: 'Player could not be resolved' });
+      return invalidSession(res, 'Your session is no longer valid');
     }
 
     req.playerId = player.id;

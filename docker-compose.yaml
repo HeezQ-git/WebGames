@@ -25,6 +25,7 @@ services:
     environment:
       DATABASE_URL: mongodb://mongo:27017/webgames?replicaSet=rs0
       CORS_ORIGINS: ${FRONTEND_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
     expose:
       - '8000'
     depends_on:

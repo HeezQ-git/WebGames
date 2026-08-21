@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 import useSWR, { SWRConfiguration, SWRResponse } from "swr";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -13,10 +13,19 @@ type FetcherOptions = {
 
 const defaultUrlBase = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://web-games-backend.vercel.app/' : 'http://localhost:8000/');
 
+let signingOut = false;
+
+const handleInvalidSession = async () => {
+  if (signingOut) return;
+  signingOut = true;
+  await signOut({ redirect: false });
+  window.location.reload();
+};
+
 const axiosBase = async (base?: string) => {
   const session = await getSession();
 
-  return axios.create({
+  const instance = axios.create({
     baseURL: base || defaultUrlBase,
     withCredentials: true,
     headers: {
@@ -24,6 +33,18 @@ const axiosBase = async (base?: string) => {
       'Authorization': `${session?.user?.pid || ''}`,
     },
   });
+
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error?.response?.data?.code === 'INVALID_SESSION') {
+        handleInvalidSession();
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  return instance;
 }
 
 export const fetcher = (method: Method, rest: FetcherOptions | void) => async (url: string, data?: any) => {

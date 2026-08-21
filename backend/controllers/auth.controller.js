@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const prisma = require('../lib/prisma');
 const { deletePlayerByCookie } = require('./player.controller');
 const { validateUsername, validatePassword } = require('../lib/validate');
+const { signToken, verifyToken } = require('../lib/token');
 const uuidv4 = require('uuid').v4;
 
 const signUp = async (req, res) => {
@@ -46,9 +47,10 @@ const signUp = async (req, res) => {
       });
     }
 
-    return res
-      .status(201)
-      .json({ message: 'Player signed up successfully', playerCookie });
+    return res.status(201).json({
+      message: 'Player signed up successfully',
+      playerCookie: signToken(playerCookie),
+    });
   } catch (error) {
     if (error.code === 'P2002') {
       return res.status(409).json({ message: 'Username is already taken' });
@@ -76,14 +78,14 @@ const signInAsGuest = async (res) => {
 
   return res.status(200).json({
     message: 'Player signed in as guest',
-    playerCookie,
+    playerCookie: signToken(playerCookie),
     settings: player.PlayerSettings,
   });
 };
 
 const signIn = async (req, res) => {
   try {
-    const { asGuest, username, password, oldPid: oldCookie } = req.body;
+    const { asGuest, username, password, oldPid } = req.body;
 
     if (asGuest) return await signInAsGuest(res);
 
@@ -104,13 +106,15 @@ const signIn = async (req, res) => {
       where: { playerId: player.id },
     });
 
+    const oldCookie = verifyToken(oldPid);
+
     if (oldCookie && oldCookie !== player.cookie) {
       await deletePlayerByCookie(oldCookie);
     }
 
     return res.status(200).json({
       message: 'Player signed in successfully',
-      playerCookie: player.cookie,
+      playerCookie: signToken(player.cookie),
       settings,
     });
   } catch (error) {
